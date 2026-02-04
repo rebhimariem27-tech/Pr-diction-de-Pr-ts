@@ -1,0 +1,19 @@
+ID,Salaire_Annuel,Montant_Pret,Score_Credit,Resultat,Justification_Historique
+1,45000,10000,700,1,Client sérieux emploi stable.
+2,20000,50000,450,0,Salaire trop faible pour ce montant.
+3,80000,20000,800,1,Haut revenu excellent historique.
+4,35000,8000,650,1,Revenu modéré bon score de crédit.
+5,25000,15000,550,0,Ratio endettement trop élevé.
+6,120000,40000,850,1,Très haut revenu très bon score.
+7,30000,12000,480,0,Score de crédit faible risque élevé.
+8,55000,18000,750,1,Revenu stable excellent profil.
+9,15000,20000,400,0,Salaire très faible mauvais score.
+10,90000,30000,820,1,Haut revenu professionnel stable.
+11,42000,14000,680,1,Profil équilibré bon historique.
+12,28000,25000,520,0,Ratio prêt/salaire trop important.
+13,65000,22000,780,1,Revenu élevé excellent score crédit.
+14,18000,10000,450,0,Salaire faible score credit limite.
+15,75000,25000,800,1,Professionnel établi très faible risque.
+4,500,15000,300,0,Salaire ridicule par rapport au prêt.
+5,1000,20000,400,0,Risque de défaut très élevé.
+6,1500,5000,450,0,Historique de crédit insuffisant.
