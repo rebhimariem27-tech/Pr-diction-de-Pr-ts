@@ -8,13 +8,13 @@ model = SentenceTransformer('all-MiniLM-L6-v2')
 
 @mcp.tool()
 def chercher_prets_similaires(salaire: int, montant: int, score: int) -> str:
-    requete = f"Salaire: {salaire}, Prêt: {montant}, Score: {score}"
+    requete = f"Salaire: {salaire}, Prêt: {montant}, Score de crédit: {score}"
     vector = model.encode(requete).tolist()
     
     reponse_qdrant = client.query_points(
-        collection_name="prets_historiques",
+        collection_name="prets_reels",
         query=vector,
-        limit=5 # On en cherche 5 pour être plus précis
+        limit=20 # On en cherche 20 pour une meilleure analyse
     )
     
     resultats = reponse_qdrant.points
@@ -24,10 +24,10 @@ def chercher_prets_similaires(salaire: int, montant: int, score: int) -> str:
     for res in resultats:
         p = res.payload
         # On affiche dans la console pour comprendre
-        print(f"Trouvé: Salaire={p['salaire']}, Profit={p['profit']}")
+        print(f"Trouvé: Montant={p['montant']}€, Grade={p['grade']}, Profit={p['profit']}")
         
         statut = "Rentable" if p['profit'] == 1 else "Non Rentable"
-        reponse += f"- Prêt {p['montant']}€ (Salaire: {p['salaire']}€) -> {statut}\n"
+        reponse += f"- Prêt {p['montant']}€ (Grade: {p['grade']}, Taux: {p['taux']}%) -> {statut}\n"
     
     return reponse
 
