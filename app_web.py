@@ -2,6 +2,9 @@ import streamlit as st
 import plotly.express as px
 import pandas as pd
 from serveur_mcp import chercher_prets_similaires
+from qdrant_client import QdrantClient
+from sentence_transformers import SentenceTransformer
+from openai import OpenAI
 
 # --- CONFIGURATION DE LA PAGE ---
 st.set_page_config(page_title="FinPredict AI Pro", layout="wide", initial_sidebar_state="collapsed")
@@ -129,3 +132,93 @@ if analyser:
     except Exception as e:
         st.error(f"Erreur de connexion avec Qdrant : {e}")
         st.info("Assurez-vous que Docker tourne et que vous avez lancé l'ingestion.")
+# --- CONFIGURATION ---
+client_ai = OpenAI(
+    api_key="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", 
+    base_url="https://api.groq.com/openai/v1"
+) 
+
+# Initialisation du client Qdrant
+qd_db = QdrantClient(host="localhost", port=6333)
+embed_model = SentenceTransformer('all-MiniLM-L6-v2')
+collection_name = "prets_reels"
+
+st.title("🤖 Assistant Analyse de Prêts")
+
+# --- FONCTION DE RECHERCHE ULTRA-ROBUSTE ---
+def chercher_contexte(question):
+    vector = embed_model.encode(question).tolist()
+    
+    try:
+        # METHODE 1 : La plus récente
+        if hasattr(qd_db, 'query_points'):
+            results = qd_db.query_points(collection_name=collection_name, query=vector, limit=10).points
+        # METHODE 2 : La classique
+        elif hasattr(qd_db, 'search'):
+            results = qd_db.search(collection_name=collection_name, query_vector=vector, limit=3)
+        # METHODE 3 : Sécurité
+        else:
+            # Si aucune n'est trouvée, on affiche les méthodes disponibles pour comprendre
+            metodes = [m for m in dir(qd_db) if not m.startswith('_')]
+            return f"Erreur : Méthodes introuvables. Disponibles : {metodes[:5]}"
+
+        contexte = ""
+        for res in results:
+            p = res.payload
+            m = p.get('montant', 'N/A')
+            g = p.get('grade', 'N/A')
+            pr = p.get('profit', 'N/A')
+            t = p.get('taux', 'N/A')
+            d = p.get('description', 'N/A') # Le revenu est caché là-dedans !
+            
+            contexte += f"- Prêt: {m}€, Grade: {g}, Rentable: {pr}, Taux: {t}%. Infos: {d}\n"
+        
+        return contexte
+
+    except Exception as e:
+        return f"Erreur technique lors de la recherche : {str(e)}"
+
+# --- INTERFACE DE CHAT ---
+if "messages" not in st.session_state:
+    st.session_state.messages = []
+
+for message in st.session_state.messages:
+    with st.chat_message(message["role"]):
+        st.markdown(message["content"])
+
+if prompt := st.chat_input("Posez une question sur les dossiers de prêt..."):
+    st.session_state.messages.append({"role": "user", "content": prompt})
+    with st.chat_message("user"):
+        st.markdown(prompt)
+
+    with st.chat_message("assistant"):
+        with st.spinner("Analyse des dossiers en cours..."):
+            contexte_extraite = chercher_contexte(prompt)
+            
+            # On donne le contexte à l'IA
+            instruction = f"""
+            Tu es un assistant expert en analyse de risques bancaires. 
+            Voici des données extraites de notre base historique (les dossiers les plus pertinents pour la question) :
+            {contexte_extraite}
+            
+            Informations importantes pour ton analyse :
+            - Le champ 'Resultat' (ou Profit) : 1 signifie que le prêt a été rentable/accepté, 0 signifie qu'il a échoué ou a été refusé.
+            - Le champ 'Score' : c'est le score de crédit (plus il est haut, plus le client est fiable).
+            
+            Instructions :
+            1. Si l'utilisateur te dit juste 'Bonjour', réponds poliment et propose ton aide pour analyser les prêts.
+            2. Si l'utilisateur pose une question, utilise les données fournies pour justifier ta réponse.
+            3. Si aucune donnée n'est pertinente, réponds avec tes connaissances générales en banque.
+            """
+
+            response = client_ai.chat.completions.create(
+                model="llama-3.3-70b-versatile", 
+                messages=[
+                    {"role": "system", "content": instruction},
+                    {"role": "user", "content": prompt}
+                ]
+            )
+            reponse_finale = response.choices[0].message.content
+            st.markdown(reponse_finale)
+        
+    st.session_state.messages.append({"role": "assistant", "content": reponse_finale})
