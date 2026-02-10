@@ -5,9 +5,12 @@ from serveur_mcp import chercher_prets_similaires
 from qdrant_client import QdrantClient
 from sentence_transformers import SentenceTransformer
 from openai import OpenAI
+from dotenv import load_dotenv
+import os
+load_dotenv()
 
 # --- CONFIGURATION DE LA PAGE ---
-st.set_page_config(page_title="FinPredict AI Pro", layout="wide", initial_sidebar_state="collapsed")
+st.set_page_config(page_title="FinPredict AI Pro", layout="wide", initial_sidebar_state="collapsed",page_icon="🏦")
 
 # --- DESIGN CSS PERSONNALISÉ (PALETTE PRO SLATE & BLUE) ---
 st.markdown(f"""
@@ -134,7 +137,7 @@ if analyser:
         st.info("Assurez-vous que Docker tourne et que vous avez lancé l'ingestion.")
 # --- CONFIGURATION ---
 client_ai = OpenAI(
-    api_key="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", 
+    api_key=os.getenv("GROQ_API_KEY"), 
     base_url="https://api.groq.com/openai/v1"
 ) 
 
