@@ -36,14 +36,23 @@ for index, row in df.iterrows():
     profit_reel = 1 if row['loan_status'] == 0 else 0
     
     points.append(PointStruct(
-        id=index,
-        vector=vectors[index].tolist(),
-        payload={
-            "montant": row['loan_amnt'],
-            "grade": row['loan_grade'],
-            "profit": profit_reel,
-            "taux": row['loan_int_rate'],
-            "description": descriptions[index]
+    id=index,
+    vector=vectors[index].tolist(),
+    payload={
+        "montant":           row['loan_amnt'],
+        "grade":             row['loan_grade'],
+        "profit":            profit_reel,
+        "taux":              row['loan_int_rate'],
+        "description":       descriptions[index],
+        # --- NOUVEAUX CHAMPS ---
+        "revenu":            row['person_income'],
+        "age":               row['person_age'],
+        "anciennete":        row['person_emp_length'],
+        "intention":         row['loan_intent'],
+        "proprietaire":      row['person_home_ownership'],
+        "ratio_revenu":      row['loan_percent_income'],
+        "historique_credit": row['cb_person_cred_hist_length'],
+        "defaut_passe":      row['cb_person_default_on_file'],
         }
     ))
 

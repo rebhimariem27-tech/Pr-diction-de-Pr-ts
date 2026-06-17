@@ -1,3 +1,5 @@
+import datetime
+from datetime import datetime
 import streamlit as st
 import plotly.express as px
 import pandas as pd
@@ -7,8 +9,42 @@ from sentence_transformers import SentenceTransformer
 from openai import OpenAI
 from dotenv import load_dotenv
 import os
+import joblib
+from explicabilite import expliquer_decision
+from client_n8n import envoyer_decision_n8n
+from logger_decisions import logger_decision
 load_dotenv()
+@st.cache_resource
+def charger_modele():
+    try:
+        return joblib.load('artefacts_modele.pkl')
+    except FileNotFoundError:
+        return None
 
+def predire(artefacts, salaire, montant, taux, grade, intention, age, anciennete, proprietaire, defaut_passe):
+    model    = artefacts['model']
+    encoders = artefacts['encoders']
+    features = artefacts['features']
+
+    data = {
+        'montant':              montant,
+        'taux':                 taux,
+        'revenu':               salaire,
+        'age':                  age,
+        'anciennete':           anciennete,
+        'ratio_revenu':         montant / (salaire + 1),
+        'historique_credit':    7,
+        'ratio_endettement':    montant / (salaire + 1),
+        'effort_mensuel':       (montant * taux / 100 / 12) / (salaire / 12 + 1),
+        'revenu_par_anciennete': salaire / (anciennete + 1),
+        'grade_enc':            encoders['grade'].transform([grade])[0],
+        'intention_enc':        encoders['intention'].transform([intention])[0],
+        'proprietaire_enc':     encoders['proprietaire'].transform([proprietaire])[0],
+        'defaut_passe_enc':     encoders['defaut_passe'].transform([defaut_passe])[0],
+    }
+
+    X = pd.DataFrame([data])[features]
+    return round(model.predict_proba(X)[0][1] * 100, 1)
 # --- CONFIGURATION DE LA PAGE ---
 st.set_page_config(page_title="FinPredict AI Pro", layout="wide", initial_sidebar_state="collapsed",page_icon="🏦")
 
@@ -58,83 +94,245 @@ col_form, col_spacer, col_res = st.columns([1, 0.1, 1.8])
 
 with col_form:
     st.markdown("### 📝 Nouveau Dossier")
-    salaire = st.number_input("Salaire Annuel (€)", min_value=0, value=45000)
-    montant = st.number_input("Montant du prêt (€)", min_value=0, value=10000)
-    score = st.slider("Score de Crédit", 0, 1000, 700)
-    
+
+    # --- INFORMATIONS FINANCIÈRES ---
+    st.markdown("**💰 Informations financières**")
+    salaire = st.number_input("Revenu annuel (€)", min_value=0, value=45000, step=1000)
+    montant = st.number_input("Montant du prêt (€)", min_value=0, value=10000, step=500)
+    taux = st.number_input("Taux d'intérêt (%)", min_value=0.0, max_value=35.0, value=12.0, step=0.5)
+
+    st.markdown("**📊 Profil de crédit**")
+    grade= st.selectbox("Grade de crédit",
+                        ["A", "B", "C", "D", "E", "F", "G"],
+                          index=1,
+                          help="A = meilleur profil, G = profil risqué")
+    intention = st.selectbox("Intention du prêt", [
+                             "PERSONAL", "EDUCATION", "MEDICAL",
+                             "VENTURE", "HOMEIMPROVEMENT", "DEBTCONSOLIDATION"],
+                             help="Objet de la demande de prêt")
+    defaut_passe = st.radio("Défaut de paiement passé ?",
+                             ["N", "Y"],
+                             horizontal=True,
+                             help="Y = a déjà été en défaut")
+
+    st.markdown("**👤 Profil personnel**")
+    age        = st.slider("Âge", 18, 75, 35)
+    anciennete = st.slider("Ancienneté emploi (années)", 0, 40, 5)
+    proprietaire = st.selectbox("Statut immobilier",
+                                 ["RENT", "OWN", "MORTGAGE", "OTHER"])
+
+    st.markdown("**📧 Contact**")
+    email_client = st.text_input("Email du client", value="client@exemple.com")
+
     st.write("")
     analyser = st.button("LANCER L'ANALYSE")
-
 # --- LOGIQUE DE PRÉDICTION ---
 if analyser:
-    # 1. AGENT MATHÉMATIQUE (Vérification des limites logiques)
-    # Calcul du ratio d'endettement (Prêt / Salaire)
-    ratio = montant / (salaire if salaire > 0 else 1)
-    est_absurde = False
-    message_alerte = ""
+    artefacts = charger_modele()
 
-    if ratio > 15: # Si le prêt dépasse 15x le salaire annuel
-        est_absurde = True
-        message_alerte = "Montant du prêt disproportionné par rapport au salaire."
-    if score < 150:
-        est_absurde = True
-        message_alerte = "Score de crédit critique."
+    if artefacts is None:
+        st.error("Lancez d'abord : python model_ml.py")
+    else:
+        # Score ML (70% du poids)
+        score_ml = predire(
+            artefacts,
+            salaire=salaire, montant=montant, taux=taux,
+            grade=grade, intention=intention,
+            age=age, anciennete=anciennete,
+            proprietaire=proprietaire, defaut_passe=defaut_passe
+        )
 
-    # 2. AGENT VECTORIEL (Recherche Qdrant)
-    try:
-        resultats_qdrant = chercher_prets_similaires(salaire, montant, score)
+        # Score Qdrant (30% du poids — contexte historique)
+        resultats_qdrant = chercher_prets_similaires(
+            salaire=salaire,
+            montant=montant,
+            score=score_ml
+        )
+
         nb_ok = resultats_qdrant.count("Rentable")
-        nb_nok = resultats_qdrant.count("Non Rentable")
-        total_sim = nb_ok + nb_nok
-        
-        # Probabilité brute de Qdrant
-        probabilite_brute = (nb_ok / total_sim * 100) if total_sim > 0 else 50
-        
-        # 3. SYNTHÈSE (A2A Hybrid Logic)
-        if est_absurde:
-            # On écrase le résultat de l'IA par une punition mathématique
-            score_final = probabilite_brute * 0.05 # On réduit à presque rien
-            decision = "REJET AUTOMATIQUE"
-            couleur_decision = "#F87171" # Rouge
-            explication = f"ALERTE : {message_alerte} Malgré des dossiers historiquement proches parfois positifs, les chiffres actuels présentent un risque mathématique majeur."
+        nb_total = nb_ok + resultats_qdrant.count("Non Rentable")
+
+        score_qdrant = (
+            nb_ok / nb_total * 100
+        ) if nb_total > 0 else 50
+
+        score_final = round(
+            0.7 * score_ml + 0.3 * score_qdrant,
+            1
+        )
+
+        if score_final > 70:
+            decision, couleur = "APPROUVÉ", "#06B6D4"
+        elif score_final > 45:
+            decision, couleur = "À RÉVISER", "#FBBF24"
         else:
-            score_final = probabilite_brute
-            decision = "APPROUVÉ" if score_final > 65 else "À RÉVISER"
-            couleur_decision = "#06B6D4" if score_final > 65 else "#FBBF24"
-            explication = f"Analyse basée sur {total_sim} dossiers similaires trouvés dans la base Qdrant. Le profil semble cohérent avec les politiques de prêt habituelles."
+            decision, couleur = "REJETÉ", "#F87171"
 
-        # --- AFFICHAGE DES RÉSULTATS ---
-        with col_res:
-            st.markdown("### 📈 Diagnostic Final")
-            m1, m2 = st.columns(2)
-            with m1:
-                st.markdown(f"""<div class="metric-card">
-                    <p>Indice de Confiance</p>
-                    <h2>{score_final:.1f}%</h2>
-                </div>""", unsafe_allow_html=True)
-            with m2:
-                st.markdown(f"""<div class="metric-card" style="border-left-color: {couleur_decision};">
-                    <p>Décision Système</p>
-                    <h2 style="color:{couleur_decision} !important;">{decision}</h2>
-                </div>""", unsafe_allow_html=True)
+        # --- EXPLICATION SHAP ---
+        st.markdown("### 🔍 Pourquoi cette décision ?")
 
-            # Graphique Donut
-            df_plot = pd.DataFrame({"Cat": ["Profit", "Risque"], "Val": [score_final, 100 - score_final]})
-            fig = px.pie(df_plot, values='Val', names='Cat', hole=0.75, color_discrete_sequence=[couleur_decision, '#1E293B'])
-            fig.update_layout(paper_bgcolor='rgba(0,0,0,0)', showlegend=False, margin=dict(t=0,b=0,l=0,r=0),
-                              annotations=[dict(text=f"{int(score_final)}%", x=0.5, y=0.5, font_size=25, showarrow=False, font_color="white")])
-            st.plotly_chart(fig, use_container_width=True)
+        features_client = {
+            'montant':               montant,
+            'taux':                  taux,
+            'revenu':                salaire,
+            'age':                   age,
+            'anciennete':            anciennete,
+            'ratio_revenu':          montant / (salaire + 1),
+            'historique_credit':     7,
+            'ratio_endettement':     montant / (salaire + 1),
+            'effort_mensuel':        (montant * taux / 100 / 12) / (salaire / 12 + 1),
+            'revenu_par_anciennete': salaire / (anciennete + 1),
+            'grade_enc':             artefacts['encoders']['grade'].transform([grade])[0],
+            'intention_enc':         artefacts['encoders']['intention'].transform([intention])[0],
+            'proprietaire_enc':      artefacts['encoders']['proprietaire'].transform([proprietaire])[0],
+            'defaut_passe_enc':      artefacts['encoders']['defaut_passe'].transform([defaut_passe])[0],
+        }
 
-            # Chatbot info
-            with st.chat_message("assistant"):
-                st.write(f"**Analyse de l'expert :** {explication}")
+        explication = expliquer_decision(features_client)
 
-            with st.expander("Détails techniques (MCP / Qdrant)"):
-                st.write(resultats_qdrant)
+        col_fav, col_def = st.columns(2)
+
+        with col_fav:
+            st.markdown("**✅ Facteurs favorables**")
+
+            for f in explication['favorables']:
+                noms = {
+    'taux':                  'Taux d\'intérêt',
+    'montant':               'Montant du prêt',
+    'revenu':                'Revenu annuel',
+    'ratio_endettement':     'Ratio d\'endettement',
+    'effort_mensuel':        'Effort mensuel',
+    'grade_enc':             'Grade de crédit',
+    'defaut_passe_enc':      'Défaut passé',
+    'ratio_revenu':          'Part prêt/revenu',
+    'historique_credit':     'Historique crédit',
+    'age':                   'Âge',
+    'anciennete':            'Ancienneté emploi',
+    'proprietaire_enc':      'Statut immobilier',
+    'intention_enc':         'Intention du prêt',
+    'revenu_par_anciennete': 'Revenu / ancienneté',
+            }
                 
-    except Exception as e:
-        st.error(f"Erreur de connexion avec Qdrant : {e}")
-        st.info("Assurez-vous que Docker tourne et que vous avez lancé l'ingestion.")
+
+                nom = noms.get(f['feature'], f['feature'])
+                barre = min(int(abs(f['impact']) * 200), 100)
+
+                st.markdown(
+                    f"""
+                    <div style="margin-bottom:8px;">
+                        <span style="color:#94A3B8;">{nom}</span>
+                        <div style="background:#1E293B; border-radius:4px; height:8px; margin-top:4px;">
+                            <div style="background:#06B6D4; width:{barre}%; height:8px; border-radius:4px;"></div>
+                        </div>
+                    </div>
+                    """,
+                    unsafe_allow_html=True
+                )
+
+        with col_def:
+            st.markdown("**⚠️ Facteurs limitants**")
+
+            for f in explication['defavorables']:
+                noms = {
+                    'taux':  'Taux d\'intérêt',
+    'montant':               'Montant du prêt',
+    'revenu':                'Revenu annuel',
+    'ratio_endettement':     'Ratio d\'endettement',
+    'effort_mensuel':        'Effort mensuel',
+    'grade_enc':             'Grade de crédit',
+    'defaut_passe_enc':      'Défaut passé',
+    'ratio_revenu':          'Part prêt/revenu',
+    'historique_credit':     'Historique crédit',
+    'age':                   'Âge',
+    'anciennete':            'Ancienneté emploi',
+    'proprietaire_enc':      'Statut immobilier',
+    'intention_enc':         'Intention du prêt',
+    'revenu_par_anciennete': 'Revenu / ancienneté',
+                }
+
+                nom = noms.get(f['feature'], f['feature'])
+                barre = min(int(abs(f['impact']) * 200), 100)
+
+                st.markdown(
+                    f"""
+                    <div style="margin-bottom:8px;">
+                        <span style="color:#94A3B8;">{nom}</span>
+                        <div style="background:#1E293B; border-radius:4px; height:8px; margin-top:4px;">
+                            <div style="background:#F87171; width:{barre}%; height:8px; border-radius:4px;"></div>
+                        </div>
+                    </div>
+                    """,
+                    unsafe_allow_html=True
+                )
+
+        with st.chat_message("assistant"):
+            st.write(
+                f"**Analyse experte :** "
+                f"{explication['explication']}"
+            )
+
+        # Calculs pour le rapport
+        nb_ok = resultats_qdrant.count("Rentable")
+        nb_total = nb_ok + resultats_qdrant.count("Non Rentable")
+
+        ratio_rent = (
+            nb_ok / nb_total * 100
+        ) if nb_total > 0 else 50
+
+        from generateur_rapport import generer_rapport_pdf
+
+        pdf_bytes = generer_rapport_pdf(
+            salaire=salaire,
+            montant=montant,
+            grade=grade,
+            intention=intention,
+            score_ml=score_ml,
+            score_qdrant=score_qdrant,
+            score_final=score_final,
+            decision=decision,
+            favorables=explication['favorables'],
+            defavorables=explication['defavorables'],
+            explication=explication['explication'],
+            nb_similaires=nb_total,
+            ratio_rentable=ratio_rent,
+        )
+
+        st.download_button(
+            label="📄 Télécharger le rapport PDF",
+            data=pdf_bytes,
+            file_name=f"rapport_pret_{datetime.now().strftime('%Y%m%d_%H%M%S')}.pdf",
+            mime="application/pdf"
+        )
+        succes_n8n = envoyer_decision_n8n(
+        salaire=salaire,
+        montant=montant,
+        grade=grade,
+        taux=taux,
+        intention=intention,
+        age=age,
+        anciennete=anciennete,
+        proprietaire=proprietaire,
+        defaut_passe=defaut_passe,
+        score_ml=score_ml,
+        score_final=score_final,
+        decision=decision,
+        explication=explication['explication'],
+        email_client=email_client
+    )
+
+    if succes_n8n:
+        st.success("✅ Workflow n8n déclenché — email et log envoyés")
+    else:
+        st.info("ℹ️  n8n non disponible — rapport PDF disponible en téléchargement")
+    # Logger la décision automatiquement
+    logger_decision(
+        salaire=salaire, montant=montant, taux=taux,
+        grade=grade, intention=intention,
+        age=age, anciennete=anciennete,
+        defaut_passe=defaut_passe,
+        score_ml=score_ml, score_qdrant=score_qdrant,
+        score_final=score_final, decision=decision
+    )
 # --- CONFIGURATION ---
 client_ai = OpenAI(
     api_key=os.getenv("GROQ_API_KEY"), 
