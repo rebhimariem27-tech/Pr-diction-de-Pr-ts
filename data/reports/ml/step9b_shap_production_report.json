@@ -1,0 +1,286 @@
+{
+  "step": "9b",
+  "title": "Production-aligned SHAP Explainability",
+  "dataset": "data\\processed\\donnees_prets_features.csv",
+  "train_rows": 25927,
+  "test_rows": 6482,
+  "shap_sample_size": 3000,
+  "production": {
+    "model": "LightGBM + sigmoid calibration",
+    "calibration_method": "sigmoid",
+    "calibration_cv": 5,
+    "threshold": 0.48,
+    "test_roc_auc": 0.9532608840968189,
+    "test_brier": 0.049690903504614733,
+    "internal_lightgbm_count": 5
+  },
+  "shap": {
+    "explainer": "TreeExplainer",
+    "aggregation": "average SHAP across the 5 internal LightGBM estimators",
+    "categorical_aggregation": "one-hot columns grouped back to original business feature",
+    "interpretation": "SHAP explains the underlying LightGBM score before sigmoid calibration; SHAP values are not percentage-point changes in calibrated P(default).",
+    "reference_expected_value": -1.2688153124433514,
+    "global_importance": [
+      {
+        "feature": "person_home_ownership",
+        "mean_abs_shap": 0.811397680885223,
+        "mean_signed_shap": -0.05978927177782575
+      },
+      {
+        "feature": "loan_percent_income",
+        "mean_abs_shap": 0.7529271135910968,
+        "mean_signed_shap": -0.017340861108082747
+      },
+      {
+        "feature": "person_income",
+        "mean_abs_shap": 0.7242744821069843,
+        "mean_signed_shap": 0.06705226809323302
+      },
+      {
+        "feature": "loan_intent",
+        "mean_abs_shap": 0.5772102217790441,
+        "mean_signed_shap": -0.05055180662258023
+      },
+      {
+        "feature": "loan_int_rate",
+        "mean_abs_shap": 0.49590580539160345,
+        "mean_signed_shap": -0.08016548340908737
+      },
+      {
+        "feature": "loan_grade",
+        "mean_abs_shap": 0.4542093245986181,
+        "mean_signed_shap": 0.08012612159242456
+      },
+      {
+        "feature": "interest_income_ratio",
+        "mean_abs_shap": 0.18940459083554254,
+        "mean_signed_shap": 0.0021424235469891854
+      },
+      {
+        "feature": "person_emp_length",
+        "mean_abs_shap": 0.11607437951594489,
+        "mean_signed_shap": 0.010212475956263884
+      },
+      {
+        "feature": "person_age",
+        "mean_abs_shap": 0.09700945597881241,
+        "mean_signed_shap": 0.016773346472103563
+      },
+      {
+        "feature": "loan_amnt",
+        "mean_abs_shap": 0.07341115411453862,
+        "mean_signed_shap": -0.005101024066845593
+      },
+      {
+        "feature": "cb_person_cred_hist_length",
+        "mean_abs_shap": 0.020735253464501266,
+        "mean_signed_shap": 0.001524799051605869
+      },
+      {
+        "feature": "cb_person_default_on_file",
+        "mean_abs_shap": 0.008843588452865514,
+        "mean_signed_shap": 0.0013115546635272483
+      }
+    ]
+  },
+  "examples": [
+    {
+      "production_probability_default": 0.9999092305064934,
+      "production_threshold": 0.48,
+      "production_decision": "REFUSE",
+      "actual_loan_status": 1,
+      "risk_factors": [
+        {
+          "feature": "loan_percent_income",
+          "shap_value": 3.327786056399835,
+          "direction": "increases_risk"
+        },
+        {
+          "feature": "person_income",
+          "shap_value": 3.136007467010719,
+          "direction": "increases_risk"
+        },
+        {
+          "feature": "loan_intent",
+          "shap_value": 1.1822029663554807,
+          "direction": "increases_risk"
+        },
+        {
+          "feature": "person_home_ownership",
+          "shap_value": 1.0511435473611468,
+          "direction": "increases_risk"
+        },
+        {
+          "feature": "person_age",
+          "shap_value": 0.7759904888756125,
+          "direction": "increases_risk"
+        }
+      ],
+      "protective_factors": [],
+      "top_factors": [
+        {
+          "feature": "loan_percent_income",
+          "shap_value": 3.327786056399835,
+          "direction": "increases_risk"
+        },
+        {
+          "feature": "person_income",
+          "shap_value": 3.136007467010719,
+          "direction": "increases_risk"
+        },
+        {
+          "feature": "loan_intent",
+          "shap_value": 1.1822029663554807,
+          "direction": "increases_risk"
+        },
+        {
+          "feature": "person_home_ownership",
+          "shap_value": 1.0511435473611468,
+          "direction": "increases_risk"
+        },
+        {
+          "feature": "person_age",
+          "shap_value": 0.7759904888756125,
+          "direction": "increases_risk"
+        }
+      ],
+      "example": "highest_risk",
+      "row_index": 8549
+    },
+    {
+      "production_probability_default": 0.4803316570792446,
+      "production_threshold": 0.48,
+      "production_decision": "REFUSE",
+      "actual_loan_status": 0,
+      "risk_factors": [
+        {
+          "feature": "loan_percent_income",
+          "shap_value": 1.8391438754844214,
+          "direction": "increases_risk"
+        },
+        {
+          "feature": "interest_income_ratio",
+          "shap_value": 0.5966002674030058,
+          "direction": "increases_risk"
+        },
+        {
+          "feature": "person_income",
+          "shap_value": 0.49919828003526395,
+          "direction": "increases_risk"
+        },
+        {
+          "feature": "loan_intent",
+          "shap_value": 0.3700071501399676,
+          "direction": "increases_risk"
+        }
+      ],
+      "protective_factors": [
+        {
+          "feature": "person_home_ownership",
+          "shap_value": -1.4322405727826246,
+          "direction": "decreases_risk"
+        }
+      ],
+      "top_factors": [
+        {
+          "feature": "loan_percent_income",
+          "shap_value": 1.8391438754844214,
+          "direction": "increases_risk"
+        },
+        {
+          "feature": "person_home_ownership",
+          "shap_value": -1.4322405727826246,
+          "direction": "decreases_risk"
+        },
+        {
+          "feature": "interest_income_ratio",
+          "shap_value": 0.5966002674030058,
+          "direction": "increases_risk"
+        },
+        {
+          "feature": "person_income",
+          "shap_value": 0.49919828003526395,
+          "direction": "increases_risk"
+        },
+        {
+          "feature": "loan_intent",
+          "shap_value": 0.3700071501399676,
+          "direction": "increases_risk"
+        }
+      ],
+      "example": "closest_to_threshold",
+      "row_index": 1624
+    },
+    {
+      "production_probability_default": 1.575597720743391e-05,
+      "production_threshold": 0.48,
+      "production_decision": "ACCEPT",
+      "actual_loan_status": 0,
+      "risk_factors": [],
+      "protective_factors": [
+        {
+          "feature": "person_home_ownership",
+          "shap_value": -3.52403406055799,
+          "direction": "decreases_risk"
+        },
+        {
+          "feature": "loan_intent",
+          "shap_value": -1.1840037054087014,
+          "direction": "decreases_risk"
+        },
+        {
+          "feature": "person_income",
+          "shap_value": -0.7842788491890257,
+          "direction": "decreases_risk"
+        },
+        {
+          "feature": "loan_int_rate",
+          "shap_value": -0.5987108333415377,
+          "direction": "decreases_risk"
+        },
+        {
+          "feature": "loan_percent_income",
+          "shap_value": -0.3817820675713797,
+          "direction": "decreases_risk"
+        }
+      ],
+      "top_factors": [
+        {
+          "feature": "person_home_ownership",
+          "shap_value": -3.52403406055799,
+          "direction": "decreases_risk"
+        },
+        {
+          "feature": "loan_intent",
+          "shap_value": -1.1840037054087014,
+          "direction": "decreases_risk"
+        },
+        {
+          "feature": "person_income",
+          "shap_value": -0.7842788491890257,
+          "direction": "decreases_risk"
+        },
+        {
+          "feature": "loan_int_rate",
+          "shap_value": -0.5987108333415377,
+          "direction": "decreases_risk"
+        },
+        {
+          "feature": "loan_percent_income",
+          "shap_value": -0.3817820675713797,
+          "direction": "decreases_risk"
+        }
+      ],
+      "example": "lowest_risk",
+      "row_index": 31210
+    }
+  ],
+  "artifacts": {
+    "global_csv": "data\\reports\\ml\\step9b_shap_global_business_features.csv",
+    "individual_csv": "data\\reports\\ml\\step9b_shap_individual_explanations.csv",
+    "examples_json": "data\\reports\\ml\\step9b_shap_examples.json",
+    "summary_plot": "data\\reports\\ml\\step9b_shap_summary_business_features.png",
+    "bar_plot": "data\\reports\\ml\\step9b_shap_bar_business_features.png",
+    "production_pipeline": "data\\reports\\ml\\step9b_production_calibrated_pipeline.joblib"
+  }
+}

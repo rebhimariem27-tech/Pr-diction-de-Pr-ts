@@ -1,0 +1,16 @@
+example,row_index,actual_loan_status,production_probability_default,production_threshold,production_decision,feature,shap_value,direction
+highest_risk,8549,1,0.9999092305064934,0.48,REFUSE,loan_percent_income,3.327786056399835,increases_risk
+highest_risk,8549,1,0.9999092305064934,0.48,REFUSE,person_income,3.136007467010719,increases_risk
+highest_risk,8549,1,0.9999092305064934,0.48,REFUSE,loan_intent,1.1822029663554807,increases_risk
+highest_risk,8549,1,0.9999092305064934,0.48,REFUSE,person_home_ownership,1.0511435473611468,increases_risk
+highest_risk,8549,1,0.9999092305064934,0.48,REFUSE,person_age,0.7759904888756125,increases_risk
+closest_to_threshold,1624,0,0.4803316570792446,0.48,REFUSE,loan_percent_income,1.8391438754844214,increases_risk
+closest_to_threshold,1624,0,0.4803316570792446,0.48,REFUSE,person_home_ownership,-1.4322405727826246,decreases_risk
+closest_to_threshold,1624,0,0.4803316570792446,0.48,REFUSE,interest_income_ratio,0.5966002674030058,increases_risk
+closest_to_threshold,1624,0,0.4803316570792446,0.48,REFUSE,person_income,0.49919828003526395,increases_risk
+closest_to_threshold,1624,0,0.4803316570792446,0.48,REFUSE,loan_intent,0.3700071501399676,increases_risk
+lowest_risk,31210,0,1.575597720743391e-05,0.48,ACCEPT,person_home_ownership,-3.52403406055799,decreases_risk
+lowest_risk,31210,0,1.575597720743391e-05,0.48,ACCEPT,loan_intent,-1.1840037054087014,decreases_risk
+lowest_risk,31210,0,1.575597720743391e-05,0.48,ACCEPT,person_income,-0.7842788491890257,decreases_risk
+lowest_risk,31210,0,1.575597720743391e-05,0.48,ACCEPT,loan_int_rate,-0.5987108333415377,decreases_risk
+lowest_risk,31210,0,1.575597720743391e-05,0.48,ACCEPT,loan_percent_income,-0.3817820675713797,decreases_risk

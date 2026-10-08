@@ -1,0 +1,55 @@
+{
+  "generated_at_utc": "2026-09-30T06:42:36.963937+00:00",
+  "summary": {
+    "overall_status": "NORMAL",
+    "demo_mode": true,
+    "reference_rows": 32409,
+    "current_rows": 6482,
+    "high_drift_features": 0,
+    "moderate_drift_features": 0,
+    "high_missingness_features": 0,
+    "prediction_psi": 0.0021650337956461737,
+    "prediction_ks": 0.013784144223672967,
+    "threshold": 0.48
+  },
+  "data_quality": {
+    "high_missingness_threshold_pp": 5.0,
+    "moderate_missingness_threshold_pp": 2.0
+  },
+  "drift_thresholds": {
+    "psi_moderate": 0.1,
+    "psi_high": 0.25,
+    "ks_moderate": 0.1,
+    "ks_high": 0.2
+  },
+  "prediction_monitoring": {
+    "reference_mean_default_probability": 0.22158693935417492,
+    "current_mean_default_probability": 0.22155100234839298,
+    "reference_median_default_probability": 0.05465393220912638,
+    "current_median_default_probability": 0.055429626383976346,
+    "prediction_ks_statistic": 0.013784144223672967,
+    "prediction_psi": 0.0021650337956461737,
+    "reference_predicted_refusal_rate_pct": 17.254466351939275,
+    "current_predicted_refusal_rate_pct": 17.124344338167234,
+    "refusal_rate_delta_pp": -0.1301220137720438,
+    "threshold": 0.48
+  },
+  "model_performance": {
+    "available": true,
+    "roc_auc": 0.9532608840968189,
+    "pr_auc": 0.9125465682129632,
+    "brier_score": 0.049690903504614733,
+    "accuracy": 0.9398333847577908,
+    "precision": 0.9630630630630631,
+    "recall": 0.7538787023977433,
+    "f1": 0.8457278481012658
+  },
+  "artifacts": {
+    "feature_drift_csv": "data\\reports\\monitoring\\step10_feature_drift.csv",
+    "data_quality_csv": "data\\reports\\monitoring\\step10_data_quality.csv",
+    "prediction_summary_csv": "data\\reports\\monitoring\\step10_prediction_summary.csv",
+    "feature_drift_plot": "data\\reports\\monitoring\\step10_feature_drift.png",
+    "prediction_distribution_plot": "data\\reports\\monitoring\\step10_prediction_distribution.png",
+    "missingness_plot": "data\\reports\\monitoring\\step10_missingness.png"
+  }
+}

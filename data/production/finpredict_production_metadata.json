@@ -1,0 +1,85 @@
+{
+  "model_version": "1.0.0",
+  "trained_at_utc": "2026-09-26T20:47:38.854911+00:00",
+  "production_threshold": 0.48,
+  "model_features": [
+    "person_age",
+    "person_income",
+    "loan_amnt",
+    "loan_int_rate",
+    "person_emp_length",
+    "loan_percent_income",
+    "cb_person_cred_hist_length",
+    "interest_income_ratio",
+    "person_home_ownership",
+    "loan_intent",
+    "loan_grade",
+    "cb_person_default_on_file"
+  ],
+  "numeric_features": [
+    "person_age",
+    "person_income",
+    "loan_amnt",
+    "loan_int_rate",
+    "person_emp_length",
+    "loan_percent_income",
+    "cb_person_cred_hist_length",
+    "interest_income_ratio"
+  ],
+  "categorical_features": [
+    "person_home_ownership",
+    "loan_intent",
+    "loan_grade",
+    "cb_person_default_on_file"
+  ],
+  "target": "loan_status",
+  "lgb_params": {
+    "objective": "binary",
+    "n_estimators": 300,
+    "learning_rate": 0.05,
+    "num_leaves": 31,
+    "class_weight": "balanced",
+    "random_state": 42,
+    "n_jobs": -1,
+    "verbosity": -1
+  },
+  "calibration_method": "sigmoid",
+  "test_metrics_at_production_threshold": {
+    "threshold": 0.48,
+    "roc_auc": 0.9532608840968189,
+    "pr_auc": 0.9125465682129632,
+    "brier_score": 0.049690903504614733,
+    "precision": 0.9630630630630631,
+    "recall": 0.7538787023977433,
+    "f1": 0.8457278481012658,
+    "confusion_matrix": [
+      [
+        5023,
+        41
+      ],
+      [
+        349,
+        1069
+      ]
+    ]
+  },
+  "test_metrics_at_050": {
+    "threshold": 0.5,
+    "roc_auc": 0.9532608840968189,
+    "pr_auc": 0.9125465682129632,
+    "brier_score": 0.049690903504614733,
+    "precision": 0.9656108597285068,
+    "recall": 0.7524682651622003,
+    "f1": 0.8458184700753072,
+    "confusion_matrix": [
+      [
+        5026,
+        38
+      ],
+      [
+        351,
+        1067
+      ]
+    ]
+  }
+}

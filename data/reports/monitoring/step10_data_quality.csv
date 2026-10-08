@@ -1,0 +1,13 @@
+feature,reference_missing_pct,current_missing_pct,missing_delta_pp,missingness_status,reference_min,current_min,reference_max,current_max,reference_unique,current_unique
+person_age,0.0,0.0,0.0,LOW,20.0,20.0,94.0,84.0,,
+person_income,0.0,0.0,0.0,LOW,4000.0,4000.0,2039784.0,1900000.0,,
+loan_amnt,0.0,0.0,0.0,LOW,500.0,500.0,35000.0,35000.0,,
+loan_int_rate,9.546730846369837,9.734649799444615,0.18791895307477963,LOW,5.42,5.42,23.22,22.11,,
+person_emp_length,2.736894072634145,2.730638691761802,-0.006255380872342842,LOW,0.0,0.0,41.0,41.0,,
+loan_percent_income,0.0,0.0,0.0,LOW,0.0,0.0,0.83,0.69,,
+cb_person_cred_hist_length,0.0,0.0,0.0,LOW,2.0,2.0,30.0,30.0,,
+interest_income_ratio,9.546730846369837,9.734649799444615,0.18791895307477963,LOW,0.0001146153846153,0.0001146153846153,0.1149375,0.10759375,,
+person_home_ownership,0.0,0.0,0.0,LOW,,,,,4.0,4.0
+loan_intent,0.0,0.0,0.0,LOW,,,,,6.0,6.0
+loan_grade,0.0,0.0,0.0,LOW,,,,,7.0,7.0
+cb_person_default_on_file,0.0,0.0,0.0,LOW,,,,,2.0,2.0

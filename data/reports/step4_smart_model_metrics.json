@@ -1,0 +1,23 @@
+{
+  "pipeline": "KNN imputation + missing indicators + LightGBM",
+  "dataset": "data\\processed\\donnees_prets_features.csv",
+  "train_rows": 25927,
+  "test_rows": 6482,
+  "processed_features": 30,
+  "threshold": 0.5,
+  "roc_auc": 0.9510632034082224,
+  "pr_auc": 0.9084202210547867,
+  "precision": 0.8391812865497076,
+  "recall": 0.8095909732016925,
+  "f1": 0.8241206030150754,
+  "confusion_matrix": [
+    [
+      4844,
+      220
+    ],
+    [
+      270,
+      1148
+    ]
+  ]
+}

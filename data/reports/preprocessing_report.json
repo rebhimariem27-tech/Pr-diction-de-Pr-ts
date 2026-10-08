@@ -1,0 +1,106 @@
+{
+  "metadata": {
+    "generated_at": "2026-09-07T17:51:12.276908",
+    "input_file": "donnees_prets_reels.csv",
+    "output_file": "data\\processed\\donnees_prets_clean.csv"
+  },
+  "dataset": {
+    "rows_raw": 32581,
+    "rows_clean": 32409,
+    "rows_removed_total": 172
+  },
+  "removed_rows": {
+    "missing_target": 0,
+    "duplicates_exact": 165,
+    "age": 5,
+    "income": 0,
+    "loan_amount": 0,
+    "interest_rate": 0,
+    "loan_percent_income": 0,
+    "employment_length": 2,
+    "credit_history_length": 0,
+    "target": 0,
+    "total_invalid_rows": 7
+  },
+  "missing_values_after_cleaning": {
+    "person_emp_length": {
+      "count": 887,
+      "percentage": 2.737
+    },
+    "loan_int_rate": {
+      "count": 3094,
+      "percentage": 9.547
+    }
+  },
+  "target_after_cleaning": {
+    "column": "loan_status",
+    "distribution": {
+      "0": {
+        "count": 25321,
+        "percentage": 78.13
+      },
+      "1": {
+        "count": 7088,
+        "percentage": 21.87
+      }
+    }
+  },
+  "categorical_domains": {
+    "person_home_ownership": {
+      "observed_values": [
+        "MORTGAGE",
+        "OTHER",
+        "OWN",
+        "RENT"
+      ],
+      "unexpected_values": [],
+      "valid": true
+    },
+    "loan_intent": {
+      "observed_values": [
+        "DEBTCONSOLIDATION",
+        "EDUCATION",
+        "HOMEIMPROVEMENT",
+        "MEDICAL",
+        "PERSONAL",
+        "VENTURE"
+      ],
+      "unexpected_values": [],
+      "valid": true
+    },
+    "loan_grade": {
+      "observed_values": [
+        "A",
+        "B",
+        "C",
+        "D",
+        "E",
+        "F",
+        "G"
+      ],
+      "unexpected_values": [],
+      "valid": true
+    },
+    "cb_person_default_on_file": {
+      "observed_values": [
+        "N",
+        "Y"
+      ],
+      "unexpected_values": [],
+      "valid": true
+    }
+  },
+  "feature_diagnostics": {
+    "loan_percent_income": {
+      "rows_compared": 32409,
+      "difference_gt_0_05": 68,
+      "difference_gt_0_10": 0,
+      "max_absolute_difference": 0.093382,
+      "note": "Diagnostic uniquement; la définition métier de cette variable sera confirmée avant modification."
+    }
+  },
+  "imputation": {
+    "performed": false,
+    "reason": "L’imputation sera apprise uniquement sur TRAIN dans la pipeline ML afin d’éviter le data leakage."
+  }
+}

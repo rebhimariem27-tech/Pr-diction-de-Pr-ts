@@ -1,0 +1,382 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>FinPredict Monitoring Report</title>
+<style>
+body {
+    font-family: Arial, sans-serif;
+    margin: 40px;
+    line-height: 1.5;
+}
+.card {
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    padding: 20px;
+    margin-bottom: 24px;
+}
+img {
+    max-width: 100%;
+}
+.table {
+    border-collapse: collapse;
+    width: 100%;
+}
+.table th, .table td {
+    border: 1px solid #ddd;
+    padding: 8px;
+}
+.table th {
+    text-align: left;
+}
+</style>
+</head>
+
+<body>
+
+<h1>FinPredict — Monitoring Report</h1>
+
+<div class="card">
+<h2>Summary</h2>
+<pre>{
+  "overall_status": "NORMAL",
+  "demo_mode": true,
+  "reference_rows": 32409,
+  "current_rows": 6482,
+  "high_drift_features": 0,
+  "moderate_drift_features": 0,
+  "high_missingness_features": 0,
+  "prediction_psi": 0.0021650337956461737,
+  "prediction_ks": 0.013784144223672967,
+  "threshold": 0.48
+}</pre>
+</div>
+
+<div class="card">
+<h2>Prediction Monitoring</h2>
+<pre>{
+  "reference_mean_default_probability": 0.22158693935417492,
+  "current_mean_default_probability": 0.22155100234839298,
+  "reference_median_default_probability": 0.05465393220912638,
+  "current_median_default_probability": 0.055429626383976346,
+  "prediction_ks_statistic": 0.013784144223672967,
+  "prediction_psi": 0.0021650337956461737,
+  "reference_predicted_refusal_rate_pct": 17.254466351939275,
+  "current_predicted_refusal_rate_pct": 17.124344338167234,
+  "refusal_rate_delta_pp": -0.1301220137720438,
+  "threshold": 0.48
+}</pre>
+</div>
+
+<div class="card">
+<h2>Model Performance</h2>
+<pre>{
+  "available": true,
+  "roc_auc": 0.9532608840968189,
+  "pr_auc": 0.9125465682129632,
+  "brier_score": 0.049690903504614733,
+  "accuracy": 0.9398333847577908,
+  "precision": 0.9630630630630631,
+  "recall": 0.7538787023977433,
+  "f1": 0.8457278481012658
+}</pre>
+</div>
+
+<div class="card">
+<h2>Feature Drift</h2>
+<table class="dataframe table">
+  <thead>
+    <tr style="text-align: right;">
+      <th>feature</th>
+      <th>type</th>
+      <th>ks_statistic</th>
+      <th>psi</th>
+      <th>drift_status</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>loan_int_rate</td>
+      <td>numeric</td>
+      <td>0.0128</td>
+      <td>0.0018</td>
+      <td>LOW</td>
+    </tr>
+    <tr>
+      <td>person_income</td>
+      <td>numeric</td>
+      <td>0.0098</td>
+      <td>0.0017</td>
+      <td>LOW</td>
+    </tr>
+    <tr>
+      <td>person_age</td>
+      <td>numeric</td>
+      <td>0.0110</td>
+      <td>0.0016</td>
+      <td>LOW</td>
+    </tr>
+    <tr>
+      <td>loan_grade</td>
+      <td>categorical</td>
+      <td>NaN</td>
+      <td>0.0011</td>
+      <td>LOW</td>
+    </tr>
+    <tr>
+      <td>loan_amnt</td>
+      <td>numeric</td>
+      <td>0.0068</td>
+      <td>0.0011</td>
+      <td>LOW</td>
+    </tr>
+    <tr>
+      <td>person_emp_length</td>
+      <td>numeric</td>
+      <td>0.0069</td>
+      <td>0.0008</td>
+      <td>LOW</td>
+    </tr>
+    <tr>
+      <td>cb_person_cred_hist_length</td>
+      <td>numeric</td>
+      <td>0.0114</td>
+      <td>0.0008</td>
+      <td>LOW</td>
+    </tr>
+    <tr>
+      <td>loan_intent</td>
+      <td>categorical</td>
+      <td>NaN</td>
+      <td>0.0007</td>
+      <td>LOW</td>
+    </tr>
+    <tr>
+      <td>interest_income_ratio</td>
+      <td>numeric</td>
+      <td>0.0121</td>
+      <td>0.0005</td>
+      <td>LOW</td>
+    </tr>
+    <tr>
+      <td>loan_percent_income</td>
+      <td>numeric</td>
+      <td>0.0048</td>
+      <td>0.0004</td>
+      <td>LOW</td>
+    </tr>
+    <tr>
+      <td>cb_person_default_on_file</td>
+      <td>categorical</td>
+      <td>NaN</td>
+      <td>0.0003</td>
+      <td>LOW</td>
+    </tr>
+    <tr>
+      <td>person_home_ownership</td>
+      <td>categorical</td>
+      <td>NaN</td>
+      <td>0.0002</td>
+      <td>LOW</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+
+<div class="card">
+<h2>Data Quality / Missingness</h2>
+<table class="dataframe table">
+  <thead>
+    <tr style="text-align: right;">
+      <th>feature</th>
+      <th>reference_missing_pct</th>
+      <th>current_missing_pct</th>
+      <th>missing_delta_pp</th>
+      <th>missingness_status</th>
+      <th>reference_min</th>
+      <th>current_min</th>
+      <th>reference_max</th>
+      <th>current_max</th>
+      <th>reference_unique</th>
+      <th>current_unique</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>person_age</td>
+      <td>0.0000</td>
+      <td>0.0000</td>
+      <td>0.0000</td>
+      <td>LOW</td>
+      <td>20.0000</td>
+      <td>20.0000</td>
+      <td>94.0000</td>
+      <td>84.0000</td>
+      <td>NaN</td>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <td>person_income</td>
+      <td>0.0000</td>
+      <td>0.0000</td>
+      <td>0.0000</td>
+      <td>LOW</td>
+      <td>4000.0000</td>
+      <td>4000.0000</td>
+      <td>2039784.0000</td>
+      <td>1900000.0000</td>
+      <td>NaN</td>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <td>loan_amnt</td>
+      <td>0.0000</td>
+      <td>0.0000</td>
+      <td>0.0000</td>
+      <td>LOW</td>
+      <td>500.0000</td>
+      <td>500.0000</td>
+      <td>35000.0000</td>
+      <td>35000.0000</td>
+      <td>NaN</td>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <td>loan_int_rate</td>
+      <td>9.5467</td>
+      <td>9.7346</td>
+      <td>0.1879</td>
+      <td>LOW</td>
+      <td>5.4200</td>
+      <td>5.4200</td>
+      <td>23.2200</td>
+      <td>22.1100</td>
+      <td>NaN</td>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <td>person_emp_length</td>
+      <td>2.7369</td>
+      <td>2.7306</td>
+      <td>-0.0063</td>
+      <td>LOW</td>
+      <td>0.0000</td>
+      <td>0.0000</td>
+      <td>41.0000</td>
+      <td>41.0000</td>
+      <td>NaN</td>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <td>loan_percent_income</td>
+      <td>0.0000</td>
+      <td>0.0000</td>
+      <td>0.0000</td>
+      <td>LOW</td>
+      <td>0.0000</td>
+      <td>0.0000</td>
+      <td>0.8300</td>
+      <td>0.6900</td>
+      <td>NaN</td>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <td>cb_person_cred_hist_length</td>
+      <td>0.0000</td>
+      <td>0.0000</td>
+      <td>0.0000</td>
+      <td>LOW</td>
+      <td>2.0000</td>
+      <td>2.0000</td>
+      <td>30.0000</td>
+      <td>30.0000</td>
+      <td>NaN</td>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <td>interest_income_ratio</td>
+      <td>9.5467</td>
+      <td>9.7346</td>
+      <td>0.1879</td>
+      <td>LOW</td>
+      <td>0.0001</td>
+      <td>0.0001</td>
+      <td>0.1149</td>
+      <td>0.1076</td>
+      <td>NaN</td>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <td>person_home_ownership</td>
+      <td>0.0000</td>
+      <td>0.0000</td>
+      <td>0.0000</td>
+      <td>LOW</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>4.0000</td>
+      <td>4.0000</td>
+    </tr>
+    <tr>
+      <td>loan_intent</td>
+      <td>0.0000</td>
+      <td>0.0000</td>
+      <td>0.0000</td>
+      <td>LOW</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>6.0000</td>
+      <td>6.0000</td>
+    </tr>
+    <tr>
+      <td>loan_grade</td>
+      <td>0.0000</td>
+      <td>0.0000</td>
+      <td>0.0000</td>
+      <td>LOW</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>7.0000</td>
+      <td>7.0000</td>
+    </tr>
+    <tr>
+      <td>cb_person_default_on_file</td>
+      <td>0.0000</td>
+      <td>0.0000</td>
+      <td>0.0000</td>
+      <td>LOW</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>2.0000</td>
+      <td>2.0000</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+
+<div class="card">
+<h2>Feature Drift Chart</h2>
+<img src="step10_feature_drift.png" alt="Feature drift">
+</div>
+
+<div class="card">
+<h2>Prediction Distribution</h2>
+<img src="step10_prediction_distribution.png" alt="Prediction distribution">
+</div>
+
+<div class="card">
+<h2>Missingness Drift</h2>
+<img src="step10_missingness.png" alt="Missingness drift">
+</div>
+
+</body>
+</html>

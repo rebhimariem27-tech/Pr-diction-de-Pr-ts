@@ -1,0 +1,109 @@
+{
+    "dataset": {
+        "rows": 32581,
+        "columns": 12,
+        "column_names": [
+            "person_age",
+            "person_income",
+            "person_home_ownership",
+            "person_emp_length",
+            "loan_intent",
+            "loan_grade",
+            "loan_amnt",
+            "loan_int_rate",
+            "loan_status",
+            "loan_percent_income",
+            "cb_person_default_on_file",
+            "cb_person_cred_hist_length"
+        ]
+    },
+    "missing_values": {
+        "person_emp_length": {
+            "count": 895,
+            "percent": 2.747
+        },
+        "loan_int_rate": {
+            "count": 3116,
+            "percent": 9.564
+        }
+    },
+    "duplicates": 165,
+    "target_distribution": {
+        "0": {
+            "count": 25473,
+            "percent": 78.18
+        },
+        "1": {
+            "count": 7108,
+            "percent": 21.82
+        }
+    },
+    "categorical_summary": {
+        "person_home_ownership": {
+            "RENT": 16446,
+            "MORTGAGE": 13444,
+            "OWN": 2584,
+            "OTHER": 107
+        },
+        "loan_intent": {
+            "EDUCATION": 6453,
+            "MEDICAL": 6071,
+            "VENTURE": 5719,
+            "PERSONAL": 5521,
+            "DEBTCONSOLIDATION": 5212,
+            "HOMEIMPROVEMENT": 3605
+        },
+        "loan_grade": {
+            "A": 10777,
+            "B": 10451,
+            "C": 6458,
+            "D": 3626,
+            "E": 964,
+            "F": 241,
+            "G": 64
+        },
+        "cb_person_default_on_file": {
+            "N": 26836,
+            "Y": 5745
+        }
+    },
+    "target_group_means": {
+        "person_age": {
+            "0": 27.8071,
+            "1": 27.4747
+        },
+        "person_income": {
+            "0": 70804.3616,
+            "1": 49125.6522
+        },
+        "person_emp_length": {
+            "0": 4.9687,
+            "1": 4.1376
+        },
+        "loan_amnt": {
+            "0": 9237.4642,
+            "1": 10850.503
+        },
+        "loan_int_rate": {
+            "0": 10.436,
+            "1": 13.0602
+        },
+        "loan_percent_income": {
+            "0": 0.1488,
+            "1": 0.2469
+        },
+        "cb_person_cred_hist_length": {
+            "0": 5.8375,
+            "1": 5.685
+        }
+    },
+    "default_rate_by_loan_grade": {
+        "A": 0.0996,
+        "B": 0.1628,
+        "C": 0.2073,
+        "D": 0.5905,
+        "E": 0.6442,
+        "F": 0.7054,
+        "G": 0.9844
+    }
+}

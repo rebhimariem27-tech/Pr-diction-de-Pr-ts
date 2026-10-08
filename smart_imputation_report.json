@@ -1,0 +1,354 @@
+{
+  "method": {
+    "numeric": "StandardScaler -> KNNImputer(weights=distance, add_indicator=True)",
+    "categorical": "CatBoost confidence-aware when missing; otherwise explicit __MISSING__ category + indicator",
+    "leakage_control": "All preprocessing is fitted on TRAIN only; K selection uses an internal validation split of TRAIN."
+  },
+  "selected_k": 7,
+  "k_candidates": [
+    {
+      "k": 7,
+      "mean_normalized_MAE": 0.289793,
+      "per_feature": {
+        "person_age": {
+          "masked_values": 120,
+          "MAE": 2.020079,
+          "RMSE": 2.827785,
+          "normalized_MAE": 0.288583
+        },
+        "person_income": {
+          "masked_values": 120,
+          "MAE": 13683.947344,
+          "RMSE": 34742.469909,
+          "normalized_MAE": 0.340126
+        },
+        "loan_amnt": {
+          "masked_values": 120,
+          "MAE": 1808.076559,
+          "RMSE": 2785.303153,
+          "normalized_MAE": 0.244955
+        },
+        "loan_int_rate": {
+          "masked_values": 108,
+          "MAE": 1.42878,
+          "RMSE": 2.018395,
+          "normalized_MAE": 0.256514
+        },
+        "person_emp_length": {
+          "masked_values": 117,
+          "MAE": 2.991392,
+          "RMSE": 4.151581,
+          "normalized_MAE": 0.598278
+        },
+        "loan_percent_income": {
+          "masked_values": 120,
+          "MAE": 0.025653,
+          "RMSE": 0.043557,
+          "normalized_MAE": 0.183236
+        },
+        "cb_person_cred_hist_length": {
+          "masked_values": 120,
+          "MAE": 1.412184,
+          "RMSE": 1.956976,
+          "normalized_MAE": 0.282437
+        },
+        "interest_income_ratio": {
+          "masked_values": 108,
+          "MAE": 0.002223,
+          "RMSE": 0.00414,
+          "normalized_MAE": 0.124212
+        }
+      }
+    },
+    {
+      "k": 3,
+      "mean_normalized_MAE": 0.293266,
+      "per_feature": {
+        "person_age": {
+          "masked_values": 120,
+          "MAE": 2.388826,
+          "RMSE": 3.60545,
+          "normalized_MAE": 0.341261
+        },
+        "person_income": {
+          "masked_values": 120,
+          "MAE": 10171.4657,
+          "RMSE": 17610.499541,
+          "normalized_MAE": 0.25282
+        },
+        "loan_amnt": {
+          "masked_values": 120,
+          "MAE": 1724.557244,
+          "RMSE": 2998.444024,
+          "normalized_MAE": 0.23364
+        },
+        "loan_int_rate": {
+          "masked_values": 108,
+          "MAE": 1.322599,
+          "RMSE": 1.775622,
+          "normalized_MAE": 0.23745
+        },
+        "person_emp_length": {
+          "masked_values": 117,
+          "MAE": 3.500342,
+          "RMSE": 4.816761,
+          "normalized_MAE": 0.700068
+        },
+        "loan_percent_income": {
+          "masked_values": 120,
+          "MAE": 0.023321,
+          "RMSE": 0.039144,
+          "normalized_MAE": 0.166579
+        },
+        "cb_person_cred_hist_length": {
+          "masked_values": 120,
+          "MAE": 1.559197,
+          "RMSE": 2.272453,
+          "normalized_MAE": 0.311839
+        },
+        "interest_income_ratio": {
+          "masked_values": 108,
+          "MAE": 0.001834,
+          "RMSE": 0.003068,
+          "normalized_MAE": 0.102471
+        }
+      }
+    },
+    {
+      "k": 15,
+      "mean_normalized_MAE": 0.303301,
+      "per_feature": {
+        "person_age": {
+          "masked_values": 120,
+          "MAE": 2.168324,
+          "RMSE": 3.092666,
+          "normalized_MAE": 0.309761
+        },
+        "person_income": {
+          "masked_values": 120,
+          "MAE": 11245.565874,
+          "RMSE": 25287.993093,
+          "normalized_MAE": 0.279518
+        },
+        "loan_amnt": {
+          "masked_values": 120,
+          "MAE": 1881.987691,
+          "RMSE": 2946.066437,
+          "normalized_MAE": 0.254969
+        },
+        "loan_int_rate": {
+          "masked_values": 108,
+          "MAE": 1.831153,
+          "RMSE": 2.385371,
+          "normalized_MAE": 0.328753
+        },
+        "person_emp_length": {
+          "masked_values": 117,
+          "MAE": 3.236896,
+          "RMSE": 4.16642,
+          "normalized_MAE": 0.647379
+        },
+        "loan_percent_income": {
+          "masked_values": 120,
+          "MAE": 0.022455,
+          "RMSE": 0.037364,
+          "normalized_MAE": 0.160391
+        },
+        "cb_person_cred_hist_length": {
+          "masked_values": 120,
+          "MAE": 1.553381,
+          "RMSE": 2.255711,
+          "normalized_MAE": 0.310676
+        },
+        "interest_income_ratio": {
+          "masked_values": 108,
+          "MAE": 0.002415,
+          "RMSE": 0.004483,
+          "normalized_MAE": 0.134963
+        }
+      }
+    },
+    {
+      "k": 10,
+      "mean_normalized_MAE": 0.303976,
+      "per_feature": {
+        "person_age": {
+          "masked_values": 120,
+          "MAE": 2.265789,
+          "RMSE": 3.092927,
+          "normalized_MAE": 0.323684
+        },
+        "person_income": {
+          "masked_values": 120,
+          "MAE": 11256.154428,
+          "RMSE": 25285.80324,
+          "normalized_MAE": 0.279781
+        },
+        "loan_amnt": {
+          "masked_values": 120,
+          "MAE": 2380.073266,
+          "RMSE": 3758.325186,
+          "normalized_MAE": 0.322449
+        },
+        "loan_int_rate": {
+          "masked_values": 108,
+          "MAE": 1.631001,
+          "RMSE": 2.283884,
+          "normalized_MAE": 0.292819
+        },
+        "person_emp_length": {
+          "masked_values": 117,
+          "MAE": 2.976152,
+          "RMSE": 3.839345,
+          "normalized_MAE": 0.59523
+        },
+        "loan_percent_income": {
+          "masked_values": 120,
+          "MAE": 0.028503,
+          "RMSE": 0.046898,
+          "normalized_MAE": 0.203596
+        },
+        "cb_person_cred_hist_length": {
+          "masked_values": 120,
+          "MAE": 1.454094,
+          "RMSE": 2.149965,
+          "normalized_MAE": 0.290819
+        },
+        "interest_income_ratio": {
+          "masked_values": 108,
+          "MAE": 0.002209,
+          "RMSE": 0.003961,
+          "normalized_MAE": 0.123433
+        }
+      }
+    },
+    {
+      "k": 5,
+      "mean_normalized_MAE": 0.308079,
+      "per_feature": {
+        "person_age": {
+          "masked_values": 120,
+          "MAE": 2.093827,
+          "RMSE": 3.097925,
+          "normalized_MAE": 0.299118
+        },
+        "person_income": {
+          "masked_values": 120,
+          "MAE": 14229.837307,
+          "RMSE": 24988.509966,
+          "normalized_MAE": 0.353695
+        },
+        "loan_amnt": {
+          "masked_values": 120,
+          "MAE": 1826.906662,
+          "RMSE": 3396.020732,
+          "normalized_MAE": 0.247506
+        },
+        "loan_int_rate": {
+          "masked_values": 108,
+          "MAE": 1.277395,
+          "RMSE": 1.689162,
+          "normalized_MAE": 0.229335
+        },
+        "person_emp_length": {
+          "masked_values": 117,
+          "MAE": 3.579265,
+          "RMSE": 4.827631,
+          "normalized_MAE": 0.715853
+        },
+        "loan_percent_income": {
+          "masked_values": 120,
+          "MAE": 0.030753,
+          "RMSE": 0.059328,
+          "normalized_MAE": 0.219666
+        },
+        "cb_person_cred_hist_length": {
+          "masked_values": 120,
+          "MAE": 1.497059,
+          "RMSE": 1.986867,
+          "normalized_MAE": 0.299412
+        },
+        "interest_income_ratio": {
+          "masked_values": 108,
+          "MAE": 0.00179,
+          "RMSE": 0.002872,
+          "normalized_MAE": 0.100043
+        }
+      }
+    }
+  ],
+  "split": {
+    "train_rows": 25927,
+    "test_rows": 6482,
+    "train_default_rate": 0.21869093994677363,
+    "test_default_rate": 0.218759642085776
+  },
+  "categorical_imputation": {
+    "person_home_ownership": {
+      "train_missing": 0,
+      "test_missing": 0,
+      "method": "not_needed"
+    },
+    "loan_intent": {
+      "train_missing": 0,
+      "test_missing": 0,
+      "method": "not_needed"
+    },
+    "loan_grade": {
+      "train_missing": 0,
+      "test_missing": 0,
+      "method": "not_needed"
+    },
+    "cb_person_default_on_file": {
+      "train_missing": 0,
+      "test_missing": 0,
+      "method": "not_needed"
+    }
+  },
+  "processed_shape": {
+    "train": [
+      25927,
+      30
+    ],
+    "test": [
+      6482,
+      30
+    ]
+  },
+  "processed_nan_count": {
+    "train": 0,
+    "test": 0
+  },
+  "feature_names": [
+    "person_age",
+    "person_income",
+    "loan_amnt",
+    "loan_int_rate",
+    "person_emp_length",
+    "loan_percent_income",
+    "cb_person_cred_hist_length",
+    "interest_income_ratio",
+    "missingindicator_loan_int_rate",
+    "missingindicator_person_emp_length",
+    "missingindicator_interest_income_ratio",
+    "person_home_ownership_MORTGAGE",
+    "person_home_ownership_OTHER",
+    "person_home_ownership_OWN",
+    "person_home_ownership_RENT",
+    "loan_intent_DEBTCONSOLIDATION",
+    "loan_intent_EDUCATION",
+    "loan_intent_HOMEIMPROVEMENT",
+    "loan_intent_MEDICAL",
+    "loan_intent_PERSONAL",
+    "loan_intent_VENTURE",
+    "loan_grade_A",
+    "loan_grade_B",
+    "loan_grade_C",
+    "loan_grade_D",
+    "loan_grade_E",
+    "loan_grade_F",
+    "loan_grade_G",
+    "cb_person_default_on_file_N",
+    "cb_person_default_on_file_Y"
+  ]
+}

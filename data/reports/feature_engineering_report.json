@@ -1,0 +1,61 @@
+{
+  "generated_at": "2026-09-07T17:52:20.268162",
+  "raw_rows": 32409,
+  "rows": 32409,
+  "target": "loan_status",
+  "model_features_before_encoding": [
+    "person_age",
+    "person_income",
+    "loan_amnt",
+    "loan_int_rate",
+    "person_emp_length",
+    "loan_percent_income",
+    "cb_person_cred_hist_length",
+    "person_home_ownership",
+    "loan_intent",
+    "loan_grade",
+    "cb_person_default_on_file",
+    "interest_income_ratio"
+  ],
+  "model_feature_count_before_encoding": 12,
+  "diagnostic_features": [
+    "loan_to_income",
+    "income_per_employment_year",
+    "loan_percent_income_diff",
+    "loan_to_monthly_income",
+    "employment_age_ratio"
+  ],
+  "diagnostic_feature_count": 5,
+  "model_feature_missing_values": {
+    "person_age": 0,
+    "person_income": 0,
+    "loan_amnt": 0,
+    "loan_int_rate": 3094,
+    "person_emp_length": 887,
+    "loan_percent_income": 0,
+    "cb_person_cred_hist_length": 0,
+    "person_home_ownership": 0,
+    "loan_intent": 0,
+    "loan_grade": 0,
+    "cb_person_default_on_file": 0,
+    "interest_income_ratio": 3094
+  },
+  "diagnostic_feature_missing_values": {
+    "loan_to_income": 0,
+    "income_per_employment_year": 4973,
+    "loan_percent_income_diff": 0,
+    "loan_to_monthly_income": 0,
+    "employment_age_ratio": 887
+  },
+  "loan_percent_income_diagnostic": {
+    "rows_compared": 32409,
+    "rows_with_diff_gt_0_05": 68,
+    "rows_with_diff_gt_0_10": 0,
+    "max_difference": 0.09338235294117647
+  },
+  "processing": {
+    "imputation": false,
+    "encoding": false,
+    "scaling": false
+  }
+}

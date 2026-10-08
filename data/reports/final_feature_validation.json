@@ -1,0 +1,215 @@
+{
+  "metadata": {
+    "generated_at": "2026-09-07T17:56:51.041564"
+  },
+  "dataset": {
+    "rows": 32409,
+    "columns": 18
+  },
+  "schema": {
+    "valid": true,
+    "missing_model_columns": [],
+    "unexpected_columns": [],
+    "diagnostic_columns_present": [
+      "loan_to_income",
+      "income_per_employment_year",
+      "loan_percent_income_diff",
+      "loan_to_monthly_income",
+      "employment_age_ratio"
+    ]
+  },
+  "model_features": {
+    "count": 12,
+    "numeric": [
+      "person_age",
+      "person_income",
+      "loan_amnt",
+      "loan_int_rate",
+      "person_emp_length",
+      "loan_percent_income",
+      "cb_person_cred_hist_length",
+      "interest_income_ratio"
+    ],
+    "categorical": [
+      "person_home_ownership",
+      "loan_intent",
+      "loan_grade",
+      "cb_person_default_on_file"
+    ]
+  },
+  "diagnostic_features": [
+    "loan_to_income",
+    "income_per_employment_year",
+    "loan_percent_income_diff",
+    "loan_to_monthly_income",
+    "employment_age_ratio"
+  ],
+  "missing_values_model_features": {
+    "loan_int_rate": {
+      "count": 3094,
+      "percentage": 9.547
+    },
+    "person_emp_length": {
+      "count": 887,
+      "percentage": 2.737
+    },
+    "interest_income_ratio": {
+      "count": 3094,
+      "percentage": 9.547
+    }
+  },
+  "infinite_values_model_features": {},
+  "target_distribution": {
+    "0": {
+      "count": 25321,
+      "percentage": 78.13
+    },
+    "1": {
+      "count": 7088,
+      "percentage": 21.87
+    }
+  },
+  "numeric_statistics_model_features": {
+    "person_age": {
+      "count": 32409.0,
+      "mean": 27.730754,
+      "std": 6.210445,
+      "min": 20.0,
+      "25%": 23.0,
+      "50%": 26.0,
+      "75%": 30.0,
+      "max": 94.0
+    },
+    "person_income": {
+      "count": 32409.0,
+      "mean": 65894.277053,
+      "std": 52517.869973,
+      "min": 4000.0,
+      "25%": 38500.0,
+      "50%": 55000.0,
+      "75%": 79200.0,
+      "max": 2039784.0
+    },
+    "loan_amnt": {
+      "count": 32409.0,
+      "mean": 9592.486655,
+      "std": 6320.885127,
+      "min": 500.0,
+      "25%": 5000.0,
+      "50%": 8000.0,
+      "75%": 12250.0,
+      "max": 35000.0
+    },
+    "loan_int_rate": {
+      "count": 29315.0,
+      "mean": 11.017099,
+      "std": 3.241718,
+      "min": 5.42,
+      "25%": 7.9,
+      "50%": 10.99,
+      "75%": 13.47,
+      "max": 23.22
+    },
+    "person_emp_length": {
+      "count": 31522.0,
+      "mean": 4.78285,
+      "std": 4.037343,
+      "min": 0.0,
+      "25%": 2.0,
+      "50%": 4.0,
+      "75%": 7.0,
+      "max": 41.0
+    },
+    "loan_percent_income": {
+      "count": 32409.0,
+      "mean": 0.170248,
+      "std": 0.106785,
+      "min": 0.0,
+      "25%": 0.09,
+      "50%": 0.15,
+      "75%": 0.23,
+      "max": 0.83
+    },
+    "cb_person_cred_hist_length": {
+      "count": 32409.0,
+      "mean": 5.811194,
+      "std": 4.057899,
+      "min": 2.0,
+      "25%": 3.0,
+      "50%": 4.0,
+      "75%": 8.0,
+      "max": 30.0
+    },
+    "interest_income_ratio": {
+      "count": 29315.0,
+      "mean": 0.019217,
+      "std": 0.014311,
+      "min": 0.000115,
+      "25%": 0.008614,
+      "50%": 0.015362,
+      "75%": 0.026103,
+      "max": 0.114937
+    }
+  },
+  "engineered_model_feature_ranges": {
+    "interest_income_ratio": {
+      "negative_count": 0,
+      "zero_count": 0,
+      "missing_count": 3094,
+      "min": 0.00011462,
+      "max": 0.1149375
+    }
+  },
+  "strong_correlations_model_features_abs_ge_0_90": [],
+  "categorical_cardinality": {
+    "person_home_ownership": {
+      "RENT": 16374,
+      "MORTGAGE": 13366,
+      "OWN": 2563,
+      "OTHER": 106
+    },
+    "loan_intent": {
+      "EDUCATION": 6409,
+      "MEDICAL": 6042,
+      "VENTURE": 5679,
+      "PERSONAL": 5496,
+      "DEBTCONSOLIDATION": 5189,
+      "HOMEIMPROVEMENT": 3594
+    },
+    "loan_grade": {
+      "A": 10702,
+      "B": 10384,
+      "C": 6436,
+      "D": 3619,
+      "E": 963,
+      "F": 241,
+      "G": 64
+    },
+    "cb_person_default_on_file": {
+      "N": 26680,
+      "Y": 5729
+    }
+  },
+  "diagnostic_feature_checks": {
+    "loan_to_income": {
+      "present": true,
+      "missing_count": 0
+    },
+    "income_per_employment_year": {
+      "present": true,
+      "missing_count": 4973
+    },
+    "loan_percent_income_diff": {
+      "present": true,
+      "missing_count": 0
+    },
+    "loan_to_monthly_income": {
+      "present": true,
+      "missing_count": 0
+    },
+    "employment_age_ratio": {
+      "present": true,
+      "missing_count": 887
+    }
+  }
+}

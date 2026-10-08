@@ -1,0 +1,122 @@
+{
+  "dataset": {
+    "rows": 32409,
+    "features_before_encoding": 12,
+    "features_after_encoding": 27
+  },
+  "split": {
+    "train": 20741,
+    "validation": 5186,
+    "test": 6482
+  },
+  "threshold": {
+    "selected_on": "validation",
+    "criterion": "maximum_f1",
+    "value": 0.72
+  },
+  "metrics": {
+    "train": {
+      "threshold": 0.72,
+      "roc_auc": 0.9883670190738483,
+      "pr_auc": 0.968195883840824,
+      "precision": 0.9849602724177071,
+      "recall": 0.7652116402116402,
+      "f1": 0.8612903225806452,
+      "brier_score": 0.045818139714785565,
+      "ece": 0.08892244331846874
+    },
+    "validation": {
+      "threshold": 0.72,
+      "roc_auc": 0.9434235450605968,
+      "pr_auc": 0.8931720330007606,
+      "precision": 0.9684466019417476,
+      "recall": 0.7037037037037037,
+      "f1": 0.81511746680286,
+      "brier_score": 0.06776889477033647,
+      "ece": 0.07446466929839508
+    },
+    "test": {
+      "threshold": 0.72,
+      "roc_auc": 0.9496726805214831,
+      "pr_auc": 0.9060975408144454,
+      "precision": 0.9625570776255707,
+      "recall": 0.7433004231311706,
+      "f1": 0.8388380421806606,
+      "brier_score": 0.06437269337511994,
+      "ece": 0.0808005132588635
+    }
+  },
+  "confusion_matrix_test": [
+    [
+      5023,
+      41
+    ],
+    [
+      364,
+      1054
+    ]
+  ],
+  "shap_generated": true,
+  "top_features": [
+    {
+      "feature": "person_income",
+      "importance": 2110
+    },
+    {
+      "feature": "loan_int_rate",
+      "importance": 1037
+    },
+    {
+      "feature": "interest_income_ratio",
+      "importance": 788
+    },
+    {
+      "feature": "loan_amnt",
+      "importance": 657
+    },
+    {
+      "feature": "loan_percent_income",
+      "importance": 636
+    },
+    {
+      "feature": "person_emp_length",
+      "importance": 634
+    },
+    {
+      "feature": "person_age",
+      "importance": 629
+    },
+    {
+      "feature": "cb_person_cred_hist_length",
+      "importance": 365
+    },
+    {
+      "feature": "person_home_ownership_RENT",
+      "importance": 270
+    },
+    {
+      "feature": "loan_intent_MEDICAL",
+      "importance": 218
+    },
+    {
+      "feature": "person_home_ownership_OWN",
+      "importance": 212
+    },
+    {
+      "feature": "loan_intent_DEBTCONSOLIDATION",
+      "importance": 198
+    },
+    {
+      "feature": "loan_intent_HOMEIMPROVEMENT",
+      "importance": 151
+    },
+    {
+      "feature": "loan_grade_C",
+      "importance": 135
+    },
+    {
+      "feature": "person_home_ownership_MORTGAGE",
+      "importance": 118
+    }
+  ]
+}

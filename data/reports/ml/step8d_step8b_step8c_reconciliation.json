@@ -1,0 +1,8 @@
+{
+  "previous_step8b_best_threshold": 0.48,
+  "previous_step8c_central_threshold": 0.68,
+  "current_deterministic_central_threshold": 0.48,
+  "current_cost_at_048": 6072702.5375,
+  "current_cost_at_068": 6236546.52,
+  "current_cost_048_minus_068": -163843.98249999993
+}

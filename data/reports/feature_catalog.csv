@@ -1,0 +1,18 @@
+feature,type,role,description
+person_age,base,model,Âge du demandeur
+person_income,base,model,Revenu annuel
+loan_amnt,base,model,Montant demandé
+loan_int_rate,base,model,Taux d'intérêt
+person_emp_length,base,model,Ancienneté professionnelle
+loan_percent_income,base,model,Part du prêt / revenu fournie par le dataset
+cb_person_cred_hist_length,base,model,Ancienneté de l'historique de crédit
+person_home_ownership,base,model,Statut immobilier
+loan_intent,base,model,Objet du prêt
+loan_grade,base,model,Grade de crédit
+cb_person_default_on_file,base,model,Défaut historique déclaré
+interest_income_ratio,engineered,model,Charge mensuelle approximative des intérêts / revenu mensuel
+loan_to_income,engineered,diagnostic,Montant du prêt / revenu annuel
+income_per_employment_year,engineered,diagnostic,Revenu / ancienneté professionnelle
+loan_percent_income_diff,diagnostic,diagnostic,Écart entre ratio fourni et ratio recalculé
+loan_to_monthly_income,engineered,diagnostic,Montant du prêt / revenu mensuel
+employment_age_ratio,engineered,diagnostic,Ancienneté / âge
