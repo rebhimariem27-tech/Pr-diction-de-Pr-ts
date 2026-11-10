@@ -22,8 +22,8 @@
     "calibration": "sigmoid",
     "calibration_cv": 5,
     "threshold": 0.48,
-    "test_roc_auc": 0.9532608840968189,
-    "test_brier": 0.049690903504614733
+    "test_roc_auc": 0.9531141028126302,
+    "test_brier": 0.05112064531781001
   },
   "shap_model": {
     "explainer": "TreeExplainer",
@@ -111,7 +111,7 @@
     {
       "row_index": 8549,
       "actual_loan_status": 1,
-      "production_probability_default": 0.9999092305064934,
+      "production_probability_default": 0.9602393014633488,
       "production_decision": "REFUSE",
       "top_factors": [
         {
@@ -148,40 +148,40 @@
       "example": "highest_risk"
     },
     {
-      "row_index": 1624,
-      "actual_loan_status": 0,
-      "production_probability_default": 0.4803316570792446,
+      "row_index": 10700,
+      "actual_loan_status": 1,
+      "production_probability_default": 0.48067741433376066,
       "production_decision": "REFUSE",
       "top_factors": [
         {
+          "feature": "person_income",
+          "feature_value": "33000.0",
+          "shap_value": 1.1655631430487081,
+          "direction": "increases_risk"
+        },
+        {
           "feature": "loan_percent_income",
-          "feature_value": "0.38",
-          "shap_value": 1.7688760668046035,
-          "direction": "increases_risk"
-        },
-        {
-          "feature": "person_home_ownership_RENT",
-          "feature_value": "0.0",
-          "shap_value": -1.431409893271583,
+          "feature_value": "0.3",
+          "shap_value": -0.7718410236656078,
           "direction": "decreases_risk"
-        },
-        {
-          "feature": "interest_income_ratio",
-          "feature_value": "0.0427696428571428",
-          "shap_value": 0.6343107991404485,
-          "direction": "increases_risk"
         },
         {
           "feature": "person_home_ownership_OWN",
           "feature_value": "0.0",
-          "shap_value": 0.48557660413457926,
+          "shap_value": 0.4070764644650673,
           "direction": "increases_risk"
         },
         {
-          "feature": "person_home_ownership_MORTGAGE",
-          "feature_value": "1.0",
-          "shap_value": -0.44281279069774787,
-          "direction": "decreases_risk"
+          "feature": "interest_income_ratio",
+          "feature_value": "0.0376363636363636",
+          "shap_value": 0.35646827418628607,
+          "direction": "increases_risk"
+        },
+        {
+          "feature": "loan_intent_VENTURE",
+          "feature_value": "0.0",
+          "shap_value": 0.3213378665880432,
+          "direction": "increases_risk"
         }
       ],
       "example": "closest_to_threshold"
@@ -189,7 +189,7 @@
     {
       "row_index": 31210,
       "actual_loan_status": 0,
-      "production_probability_default": 1.575597720743391e-05,
+      "production_probability_default": 0.011885531709212211,
       "production_decision": "ACCEPT",
       "top_factors": [
         {

@@ -26,6 +26,15 @@ type Prediction = {
   threshold: number;
   recommendation: 'ACCEPT' | 'REFUSE';
   tracking_storage: string;
+  derived_features?: Record<string, number | null>;
+  explanation?: { top_risk_factors?: Factor[]; top_protective_factors?: Factor[] };
+};
+type Factor = { feature: string; value: string | number | null; contribution: number; effect: string };
+const featureLabels: Record<string, string> = {
+  person_age: 'Âge', person_income: 'Revenu annuel', loan_amnt: 'Montant du prêt', loan_int_rate: 'Taux d’intérêt',
+  person_emp_length: 'Ancienneté professionnelle', loan_percent_income: 'Part du revenu consacrée au prêt',
+  cb_person_cred_hist_length: 'Historique de crédit', interest_income_ratio: 'Ratio intérêts / revenu',
+  person_home_ownership: 'Logement', loan_intent: 'Objet du prêt', loan_grade: 'Note du prêt', cb_person_default_on_file: 'Défaut antérieur',
 };
 type FormData = {
   person_age: string;
@@ -33,9 +42,7 @@ type FormData = {
   loan_amnt: string;
   loan_int_rate: string;
   person_emp_length: string;
-  loan_percent_income: string;
   cb_person_cred_hist_length: string;
-  interest_income_ratio: string;
   person_home_ownership: string;
   loan_intent: string;
   loan_grade: string;
@@ -58,9 +65,7 @@ const demoForm: FormData = {
   loan_amnt: '10000',
   loan_int_rate: '11.14',
   person_emp_length: '5',
-  loan_percent_income: '0.2083',
   cb_person_cred_hist_length: '8',
-  interest_income_ratio: '0.0116',
   person_home_ownership: 'RENT',
   loan_intent: 'PERSONAL',
   loan_grade: 'B',
@@ -161,29 +166,21 @@ function AnalysisView({ apiStatus, modelVersion }: { apiStatus: string; modelVer
   const [loading, setLoading] = useState(false);
   const [showAdvanced, setShowAdvanced] = useState(true);
   const update = (key: keyof FormData, value: string) => {
-    setForm(prev => {
-      const next = { ...prev, [key]: value };
-      if (key === 'person_income' || key === 'loan_amnt') {
-        const income = Number(key === 'person_income' ? value : next.person_income);
-        const amount = Number(key === 'loan_amnt' ? value : next.loan_amnt);
-        if (income > 0 && amount >= 0) next.loan_percent_income = (amount / income).toFixed(4);
-      }
-      return next;
-    });
+    setForm(prev => ({ ...prev, [key]: value }));
     setPrediction(null);
     setError('');
   };
   const submit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault(); setLoading(true); setError(''); setPrediction(null);
-    const numericKeys: (keyof FormData)[] = ['person_age', 'person_income', 'loan_amnt', 'loan_int_rate', 'person_emp_length', 'loan_percent_income', 'cb_person_cred_hist_length', 'interest_income_ratio'];
+    const numericKeys: (keyof FormData)[] = ['person_age', 'person_income', 'loan_amnt', 'loan_int_rate', 'person_emp_length', 'cb_person_cred_hist_length'];
     const payload: Record<string, string | number | null> = { application_ref: `web-${crypto.randomUUID()}` };
     for (const key of numericKeys) payload[key] = form[key].trim() === '' ? null : Number(form[key]);
     for (const key of ['person_home_ownership', 'loan_intent', 'loan_grade', 'cb_person_default_on_file'] as const) payload[key] = form[key] || null;
     try {
-      const response = await fetch(`${API_BASE}/predict`, { method: 'POST', headers: { 'Content-Type': 'application/json', Accept: 'application/json' }, body: JSON.stringify(payload) });
+      const response = await fetch('/api/predict', { method: 'POST', headers: { 'Content-Type': 'application/json', Accept: 'application/json' }, body: JSON.stringify(payload) });
       const body = await response.json().catch(() => ({}));
       if (!response.ok) {
-        const detail = typeof body.detail === 'string' ? body.detail : body.detail?.message || `La requête a échoué (HTTP ${response.status}).`;
+        const detail = typeof body.detail === 'string' ? body.detail : Array.isArray(body.detail) ? body.detail.map((d: { msg?: string }) => d.msg).filter(Boolean).join(' ; ') : body.detail?.message || `La requête a échoué (HTTP ${response.status}).`;
         throw new Error(detail);
       }
       setPrediction(body as Prediction);
@@ -220,15 +217,13 @@ function AnalysisView({ apiStatus, modelVersion }: { apiStatus: string; modelVer
         </div>
         <button type="button" className="advanced-toggle" onClick={() => setShowAdvanced(v => !v)}><SlidersHorizontal size={15} /> Variables complémentaires du modèle <ChevronDown size={15} className={showAdvanced ? 'rotate' : ''} /></button>
         {showAdvanced && <div className="form-grid advanced-grid">
-          <Field label="Part du revenu consacrée au prêt *" hint="Ratio montant demandé / revenu annuel ; recalculé automatiquement."><input required type="number" min="0" max="1" step="any" value={form.loan_percent_income} onChange={e => update('loan_percent_income', e.target.value)} /></Field>
-          <Field label="Ratio intérêts / revenu *" hint="Valeur calculée en amont selon la définition du dataset ; vérifiez l’unité du modèle."><input required type="number" min="0" step="any" value={form.interest_income_ratio} onChange={e => update('interest_income_ratio', e.target.value)} /></Field>
         </div>}
         <div className="privacy-note"><LockKeyhole size={15} /><span>Ne saisissez pas de nom, de numéro d’identité ou de données directement identifiantes. Les résultats fournis sont une recommandation du modèle, pas une décision finale de crédit.</span></div>
         {error && <div className="error-callout"><AlertCircle size={17} /><div><strong>Analyse non terminée</strong><p>{error}</p></div></div>}
         <div className="form-actions"><button type="button" className="button button-secondary" onClick={reset}><RefreshCw size={15} /> Réinitialiser</button><button type="submit" className="button button-primary" disabled={loading}>{loading ? <><span className="spinner" /> Analyse en cours…</> : <>Analyser le risque <ArrowRight size={16} /></>}</button></div>
       </form>
       <aside className="analysis-aside">
-        {prediction ? <article className="card result-card"><div className="result-top"><div className={`result-symbol ${prediction.recommendation === 'ACCEPT' ? 'result-positive' : 'result-negative'}`}>{prediction.recommendation === 'ACCEPT' ? <CheckCircle2 size={24} /> : <AlertCircle size={24} />}</div><div><span className="eyebrow">RÉSULTAT DU MODÈLE</span><h2>{prediction.recommendation === 'ACCEPT' ? 'Risque sous le seuil' : 'Risque au-dessus du seuil'}</h2><p>Recommandation : {prediction.recommendation === 'ACCEPT' ? 'ACCEPT' : 'REFUSE'}</p></div></div><div className="risk-score"><div><span className="eyebrow">Probabilité de défaut</span><strong>{defaultPct.toLocaleString('fr-FR', { maximumFractionDigits: 2 })}<small>%</small></strong></div><div className="risk-meter"><div className="risk-meter-track"><div style={{ width: `${Math.min(defaultPct, 100)}%` }} className={defaultPct >= prediction.threshold * 100 ? 'risk-high' : 'risk-low'} /></div><div className="risk-meter-labels"><span>0 %</span><span>Seuil {Math.round(prediction.threshold * 100)} %</span><span>100 %</span></div></div></div><div className="result-details"><div><span>Référence</span><strong>{prediction.application_ref}</strong></div><div><span>Modèle</span><strong>{prediction.model_version}</strong></div><div><span>ID demande</span><strong>#{prediction.application_id}</strong></div><div><span>ID prédiction</span><strong>#{prediction.prediction_id}</strong></div><div><span>Stockage</span><strong><Database size={13} /> {prediction.tracking_storage}</strong></div></div><div className="result-disclaimer"><Info size={15} /> Décision indicative : la décision finale appartient à l’analyste ou au processus de crédit responsable.</div></article> : <article className="card aside-empty"><div className="aside-illustration"><div className="halo halo-a" /><div className="halo halo-b" /><div className="shield-big"><ShieldCheck size={42} /></div><Sparkles className="sparkle s-a" size={19} /><Sparkles className="sparkle s-b" size={14} /></div><span className="eyebrow">ANALYSE EXPLICABLE</span><h2>Votre analyse apparaîtra ici</h2><p>Le modèle estimera la probabilité de défaut, la comparera au seuil de 48 % et enregistrera le résultat dans Azure SQL via FastAPI.</p><div className="aside-checks"><div><CheckCircle2 size={15} /> Pipeline de production calibré</div><div><CheckCircle2 size={15} /> Seuil de décision versionné</div><div><CheckCircle2 size={15} /> Traçabilité du résultat</div></div></article>}
+        {prediction ? <article className="card result-card"><div className="result-top"><div className={`result-symbol ${prediction.recommendation === 'ACCEPT' ? 'result-positive' : 'result-negative'}`}>{prediction.recommendation === 'ACCEPT' ? <CheckCircle2 size={24} /> : <AlertCircle size={24} />}</div><div><span className="eyebrow">RÉSULTAT DU MODÈLE</span><h2>{prediction.recommendation === 'ACCEPT' ? 'Risque sous le seuil' : 'Risque au-dessus du seuil'}</h2><p>Recommandation : {prediction.recommendation === 'ACCEPT' ? 'ACCEPT' : 'REFUSE'}</p></div></div><div className="risk-score"><div><span className="eyebrow">Probabilité de défaut</span><strong>{defaultPct.toLocaleString('fr-FR', { maximumFractionDigits: 2 })}<small>%</small></strong></div><div className="risk-meter"><div className="risk-meter-track"><div style={{ width: `${Math.min(defaultPct, 100)}%` }} className={defaultPct >= prediction.threshold * 100 ? 'risk-high' : 'risk-low'} /></div><div className="risk-meter-labels"><span>0 %</span><span>Seuil {Math.round(prediction.threshold * 100)} %</span><span>100 %</span></div></div></div><div className="result-details"><div><span>Référence</span><strong>{prediction.application_ref}</strong></div><div><span>Modèle</span><strong>{prediction.model_version}</strong></div><div><span>ID demande</span><strong>#{prediction.application_id}</strong></div><div><span>ID prédiction</span><strong>#{prediction.prediction_id}</strong></div>{prediction.derived_features ? <><div><span>Part du revenu / prêt</span><strong>{prediction.derived_features.loan_percent_income != null ? (prediction.derived_features.loan_percent_income * 100).toLocaleString('fr-FR', { maximumFractionDigits: 1 }) + ' %' : '—'}</strong></div><div><span>Ratio intérêts / revenu</span><strong>{prediction.derived_features.interest_income_ratio != null ? (prediction.derived_features.interest_income_ratio * 100).toLocaleString('fr-FR', { maximumFractionDigits: 2 }) + ' %' : '—'}</strong></div></> : null}<div><span>Stockage</span><strong><Database size={13} /> {prediction.tracking_storage}</strong></div></div>{prediction.explanation && (prediction.explanation.top_risk_factors?.length || prediction.explanation.top_protective_factors?.length) ? <div className="explain-block"><span className="eyebrow">POURQUOI CE RÉSULTAT</span><div className="explain-cols"><div><strong>Facteurs qui augmentent le risque</strong><ul>{(prediction.explanation.top_risk_factors || []).map(f => <li key={f.feature}>{featureLabels[f.feature] || f.feature}{f.value !== null ? ` (${f.value})` : ''}</li>)}{!(prediction.explanation.top_risk_factors || []).length && <li>Aucun</li>}</ul></div><div><strong>Facteurs qui réduisent le risque</strong><ul>{(prediction.explanation.top_protective_factors || []).map(f => <li key={f.feature}>{featureLabels[f.feature] || f.feature}{f.value !== null ? ` (${f.value})` : ''}</li>)}{!(prediction.explanation.top_protective_factors || []).length && <li>Aucun</li>}</ul></div></div></div> : null}<div className="result-disclaimer"><Info size={15} /> Décision indicative : la décision finale appartient à l’analyste ou au processus de crédit responsable.</div></article> : <article className="card aside-empty"><div className="aside-illustration"><div className="halo halo-a" /><div className="halo halo-b" /><div className="shield-big"><ShieldCheck size={42} /></div><Sparkles className="sparkle s-a" size={19} /><Sparkles className="sparkle s-b" size={14} /></div><span className="eyebrow">ANALYSE EXPLICABLE</span><h2>Votre analyse apparaîtra ici</h2><p>Le modèle estimera la probabilité de défaut, la comparera au seuil de 48 % et enregistrera le résultat dans Azure SQL via FastAPI.</p><div className="aside-checks"><div><CheckCircle2 size={15} /> Pipeline de production calibré</div><div><CheckCircle2 size={15} /> Seuil de décision versionné</div><div><CheckCircle2 size={15} /> Traçabilité du résultat</div></div></article>}
         <article className="card criteria-card"><div className="card-heading"><div><h3>Critères pris en compte</h3><p>12 variables du pipeline</p></div><CircleHelp size={16} className="icon-muted" /></div><div className="criteria-row"><span><WalletCards size={15} /> Capacité de remboursement</span><Check size={15} /></div><div className="criteria-row"><span><FileClock size={15} /> Historique de crédit</span><Check size={15} /></div><div className="criteria-row"><span><House size={15} /> Situation de logement</span><Check size={15} /></div><div className="criteria-row"><span><UsersRound size={15} /> Profil professionnel</span><Check size={15} /></div><div className="criteria-row"><span><LockKeyhole size={15} /> Données protégées</span><Check size={15} /></div><div className="criteria-note">Aucune décision automatique n’est exécutée par cette interface.</div></article>
       </aside>
     </div>

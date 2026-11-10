@@ -426,3 +426,10 @@ td small { display: block; color: #9aa6b4; margin-top: 4px; font-size: 9px; }
   .settings-row { align-items: flex-start; flex-direction: column; gap: 6px; }
   .settings-row code, .settings-row strong { text-align: left; }
 }
+
+/* --- Explicabilité + note variables dérivées --- */
+.explain-block { margin-top: 18px; padding-top: 16px; border-top: 1px solid #e3e9f2; }
+.explain-cols { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-top: 8px; font-size: 13px; }
+.explain-cols ul { margin: 6px 0 0; padding-left: 18px; }
+.explain-cols li { margin: 3px 0; }
+@media (max-width: 640px) { .explain-cols { grid-template-columns: 1fr; } }

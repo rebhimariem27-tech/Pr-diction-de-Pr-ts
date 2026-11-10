@@ -22,3 +22,5 @@ python-dotenv==1.0.1
 # App Service requires an explicit startup command for Python 3.13 and earlier.
 gunicorn==26.2.0
 uvicorn-worker==0.4.0
+httpx
+pydantic>=2.5
