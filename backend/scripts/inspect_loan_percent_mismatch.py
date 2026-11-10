@@ -20,7 +20,7 @@ import joblib
 import numpy as np
 import pandas as pd
 
-from features import derive_features
+from backend.app.features import derive_features
 
 ARTIFACT = Path("data/production/finpredict_production_model.joblib")
 

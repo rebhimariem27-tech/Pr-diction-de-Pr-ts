@@ -12,9 +12,9 @@ from urllib.error import HTTPError, URLError
 from urllib.request import Request, urlopen
 
 from dotenv import load_dotenv
-from sql_compat import connect
+from backend.app.sql_compat import connect
 
-PROJECT_ROOT = Path(__file__).resolve().parent
+PROJECT_ROOT = Path(__file__).resolve().parents[2]
 FEATURE_COLUMNS = [
     "person_age",
     "person_income",
@@ -87,7 +87,7 @@ def api_request(
     except URLError as exc:
         raise RuntimeError(
             f"Impossible de joindre l'API à {base_url}. "
-            "Démarre-la avec `python -m uvicorn api_azure:app --reload`. "
+            "Démarre-la avec `python -m uvicorn backend.app.main:app --reload`. "
             f"Détail réseau : {exc.reason}"
         ) from exc
 

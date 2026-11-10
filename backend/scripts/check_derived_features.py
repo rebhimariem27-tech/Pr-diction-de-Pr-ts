@@ -12,7 +12,7 @@ from pathlib import Path
 
 import pandas as pd
 
-from features import ACTIVE_FORMULAS, FORMULAS
+from backend.app.features import ACTIVE_FORMULAS, FORMULAS
 
 # Part minimale de lignes que la formule retenue doit reproduire exactement.
 MIN_MATCH_RATE = 0.95

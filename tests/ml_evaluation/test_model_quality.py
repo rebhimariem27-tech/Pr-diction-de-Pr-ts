@@ -125,10 +125,9 @@ def test_report_files_are_readable():
 
 
 def test_api_response_schema_example_smoke():
-    import api_azure
-
-    assert hasattr(api_azure, "app"), "FastAPI app should exist"
-    routes = {route.path for route in api_azure.app.routes}
+    from backend.app import main
+    assert hasattr(main, "app"), "FastAPI app should exist"
+    routes = {route.path for route in main.app.routes}
     assert "/health" in routes, "Health endpoint is missing"
     assert "/model-info" in routes, "Model-info endpoint is missing"
     assert "/predict" in routes, "Predict endpoint is missing"

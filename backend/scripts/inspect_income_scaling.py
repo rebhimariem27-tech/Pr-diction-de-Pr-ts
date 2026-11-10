@@ -16,7 +16,7 @@ from pathlib import Path
 
 import pandas as pd
 
-from features import FORMULAS, ACTIVE_FORMULAS
+from backend.app.features import FORMULAS, ACTIVE_FORMULAS
 
 SCALE = 0.85
 

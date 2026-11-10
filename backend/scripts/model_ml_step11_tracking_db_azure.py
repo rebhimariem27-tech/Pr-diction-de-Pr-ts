@@ -13,7 +13,7 @@ from typing import Any, Iterator
 
 import pandas as pd
 from dotenv import load_dotenv
-from sql_compat import connect
+from backend.app.sql_compat import connect
 
 """FinPredict Step 13 — Azure SQL tracking backend.
 
@@ -23,7 +23,7 @@ Expected .env variables: SQL_SERVER, SQL_DATABASE, SQL_USERNAME, SQL_PASSWORD.
 Do not commit .env or store direct personal identifiers in application records.
 """
 
-PROJECT_ROOT = Path(__file__).resolve().parent
+PROJECT_ROOT = Path(__file__).resolve().parents[2]
 DEFAULT_DB = PROJECT_ROOT / "data" / "tracking" / "finpredict_tracking.db"
 MODEL_FEATURES = [
     "person_age", "person_income", "loan_amnt", "loan_int_rate",

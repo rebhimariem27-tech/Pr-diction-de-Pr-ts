@@ -33,7 +33,7 @@ VALID_PAYLOAD = {
 
 
 def make_dataset(n=600, seed=0):
-    from features import derive_features
+    from backend.app.features import derive_features
     rng = np.random.default_rng(seed)
     df = pd.DataFrame({
         "person_age": rng.integers(20, 60, n),
@@ -78,11 +78,11 @@ def api_module(tiny_model, tmp_path_factory):
                  "model_features": FEATURES}, path)
     os.environ["FINPREDICT_MODEL_PATH"] = str(path)
     os.environ["FINPREDICT_ENV_FILE"] = str(path.parent / "none.env")
-    from security import hash_key
+    from backend.app.security import hash_key
     os.environ["FINPREDICT_API_KEY_HASHES"] = f"tester:{hash_key('secret-test-key')}"
     os.environ["RATE_LIMIT_PER_MINUTE"] = "1000"
-    import api_azure
-    return api_azure
+    from backend.app import main
+    return main
 
 
 class FakeCursor:

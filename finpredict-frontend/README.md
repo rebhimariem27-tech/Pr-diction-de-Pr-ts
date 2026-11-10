@@ -5,7 +5,7 @@ Interface Next.js / TypeScript inspirée de la maquette approuvée : navigation 
 ## Prérequis
 
 - Node.js 20.9 ou plus récent conseillé pour Next.js 15.
-- Le backend FastAPI existant (`api_azure.py`) pour lancer une vraie prédiction.
+- Le backend FastAPI (`backend/app/main.py`) pour lancer une vraie prédiction.
 - L'API doit être démarrée séparément.
 
 ## Installation locale

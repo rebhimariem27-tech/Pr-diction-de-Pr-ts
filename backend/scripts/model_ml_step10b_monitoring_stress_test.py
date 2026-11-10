@@ -19,7 +19,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 
-import monitoring
+from backend.scripts import monitoring
 
 
 DEFAULT_OUTPUT_DIR = Path("data/reports/monitoring/stress_test")

@@ -3,9 +3,9 @@ import json
 import pandas as pd
 import pytest
 
-from conftest import FEATURES, THRESHOLD, VALID_PAYLOAD
-from features import business_rule_violations, derive_features
-from security import ApiAuth, RateLimiter, find_key_name, hash_key, load_key_hashes
+from tests.conftest import CATEGORICAL, FEATURES, THRESHOLD, VALID_PAYLOAD
+from backend.app.features import business_rule_violations, derive_features
+from backend.app.security import ApiAuth, RateLimiter, find_key_name, hash_key, load_key_hashes
 
 
 # ---------- features ----------
@@ -55,8 +55,7 @@ def test_auth_fails_closed(monkeypatch):
 
 # ---------- explicabilité ----------
 def test_explainer_structure(tiny_model):
-    from explain import ContributionExplainer
-    from conftest import CATEGORICAL
+    from backend.app.explain import ContributionExplainer
     ex = ContributionExplainer(tiny_model, FEATURES, CATEGORICAL)
     row = pd.DataFrame([{**VALID_PAYLOAD, "person_home_ownership": "RENT", "loan_grade": "B",
                          **derive_features(10000, 48000, 11.14)}], columns=FEATURES)

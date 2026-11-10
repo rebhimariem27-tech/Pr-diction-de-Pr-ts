@@ -23,9 +23,9 @@ from pathlib import Path
 from typing import Any
 
 from dotenv import load_dotenv
-from sql_compat import connect
+from backend.app.sql_compat import connect
 
-PROJECT_ROOT = Path(__file__).resolve().parent
+PROJECT_ROOT = Path(__file__).resolve().parents[2]
 DEFAULT_SOURCE_DB = PROJECT_ROOT / "data" / "tracking" / "finpredict_tracking.db"
 
 # Create parent tables before tables with foreign keys.

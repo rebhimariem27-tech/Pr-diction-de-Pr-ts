@@ -19,16 +19,16 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel, ConfigDict, Field, model_validator
 
-from explain import ContributionExplainer
-from features import business_rule_violations, derive_features
-from security import ApiAuth
-from sql_compat import connect
+from .explain import ContributionExplainer
+from .features import business_rule_violations, derive_features
+from .security import ApiAuth
+from .sql_compat import connect
 
 # =====================================================================
 # 1. CONFIGURATION
 # =====================================================================
 
-PROJECT_ROOT = Path(__file__).resolve().parent
+PROJECT_ROOT = Path(__file__).resolve().parents[2]
 MODEL_PATH = Path(
     os.getenv("FINPREDICT_MODEL_PATH")
     or PROJECT_ROOT / "data" / "production" / "finpredict_production_model.joblib"

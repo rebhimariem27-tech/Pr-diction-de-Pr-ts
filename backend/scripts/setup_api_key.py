@@ -1,6 +1,6 @@
 """Génère une clé d'API et l'installe des deux côtés, sans copier-coller.
 
-    python setup_api_key.py
+    python -m backend.scripts.setup_api_key
 
 - Backend  : écrit/remplace FINPREDICT_API_KEY_HASHES=frontend:<hash> dans le .env du backend.
 - Frontend : écrit/remplace FINPREDICT_API_KEY=<clé> dans finpredict-frontend/.env.local
@@ -17,9 +17,9 @@ import os
 import secrets
 from pathlib import Path
 
-from security import hash_key
+from backend.app.security import hash_key
 
-ROOT = Path(__file__).resolve().parent
+ROOT = Path(__file__).resolve().parents[2]
 
 
 def upsert(path: Path, updates: dict[str, str], only_if_missing: set[str] = frozenset()) -> list[str]:

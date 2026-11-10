@@ -2,7 +2,7 @@ import os
 import sys
 
 from dotenv import load_dotenv
-from sql_compat import connect
+from backend.app.sql_compat import connect
 
 
 # 1. Charger les paramètres du fichier .env

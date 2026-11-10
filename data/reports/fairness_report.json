@@ -1,0 +1,107 @@
+{
+  "threshold": 0.48,
+  "n_test": 6482,
+  "age_band": [
+    {
+      "age_band": "<=24",
+      "n": 2380,
+      "default_rate": 0.2277,
+      "refusal_rate": 0.1824,
+      "acceptance_rate": 0.8176,
+      "recall_defaults_refused": 0.7841,
+      "false_refusal_rate": 0.0049,
+      "acceptance_ratio_vs_best": 0.9428,
+      "flag_4_5_rule": false
+    },
+    {
+      "age_band": "25-34",
+      "n": 3238,
+      "default_rate": 0.2193,
+      "refusal_rate": 0.1646,
+      "acceptance_rate": 0.8354,
+      "recall_defaults_refused": 0.7197,
+      "false_refusal_rate": 0.0087,
+      "acceptance_ratio_vs_best": 0.9633,
+      "flag_4_5_rule": false
+    },
+    {
+      "age_band": "35-44",
+      "n": 712,
+      "default_rate": 0.1938,
+      "refusal_rate": 0.1545,
+      "acceptance_rate": 0.8455,
+      "recall_defaults_refused": 0.7609,
+      "false_refusal_rate": 0.0087,
+      "acceptance_ratio_vs_best": 0.9749,
+      "flag_4_5_rule": false
+    },
+    {
+      "age_band": "45-54",
+      "n": 113,
+      "default_rate": 0.1858,
+      "refusal_rate": 0.1327,
+      "acceptance_rate": 0.8673,
+      "recall_defaults_refused": 0.7143,
+      "false_refusal_rate": 0.0,
+      "acceptance_ratio_vs_best": 1.0,
+      "flag_4_5_rule": false
+    },
+    {
+      "age_band": "55+",
+      "n": 39,
+      "default_rate": 0.1795,
+      "refusal_rate": 0.1795,
+      "acceptance_rate": 0.8205,
+      "recall_defaults_refused": 1.0,
+      "false_refusal_rate": 0.0,
+      "acceptance_ratio_vs_best": 0.9461,
+      "flag_4_5_rule": false
+    }
+  ],
+  "person_home_ownership": [
+    {
+      "person_home_ownership": "MORTGAGE",
+      "n": 2651,
+      "default_rate": 0.1294,
+      "refusal_rate": 0.0694,
+      "acceptance_rate": 0.9306,
+      "recall_defaults_refused": 0.4898,
+      "false_refusal_rate": 0.0069,
+      "acceptance_ratio_vs_best": 1.0,
+      "flag_4_5_rule": false
+    },
+    {
+      "person_home_ownership": "OTHER",
+      "n": 23,
+      "default_rate": 0.2174,
+      "refusal_rate": 0.1304,
+      "acceptance_rate": 0.8696,
+      "recall_defaults_refused": 0.6,
+      "false_refusal_rate": 0.0,
+      "acceptance_ratio_vs_best": 0.9344,
+      "flag_4_5_rule": false
+    },
+    {
+      "person_home_ownership": "OWN",
+      "n": 533,
+      "default_rate": 0.0788,
+      "refusal_rate": 0.0713,
+      "acceptance_rate": 0.9287,
+      "recall_defaults_refused": 0.9048,
+      "false_refusal_rate": 0.0,
+      "acceptance_ratio_vs_best": 0.998,
+      "flag_4_5_rule": false
+    },
+    {
+      "person_home_ownership": "RENT",
+      "n": 3275,
+      "default_rate": 0.3139,
+      "refusal_rate": 0.2669,
+      "acceptance_rate": 0.7331,
+      "recall_defaults_refused": 0.8307,
+      "false_refusal_rate": 0.0089,
+      "acceptance_ratio_vs_best": 0.7878,
+      "flag_4_5_rule": true
+    }
+  ]
+}

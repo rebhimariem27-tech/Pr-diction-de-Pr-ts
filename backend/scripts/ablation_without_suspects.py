@@ -25,8 +25,8 @@ from sklearn.metrics import (average_precision_score, brier_score_loss, precisio
                              recall_score, roc_auc_score)
 from sklearn.model_selection import train_test_split
 
-from features import ACTIVE_FORMULAS, FORMULAS
-from model_ml_final_pipeline import (MODEL_FEATURES, PRODUCTION_THRESHOLD, TARGET,
+from backend.app.features import ACTIVE_FORMULAS, FORMULAS
+from backend.scripts.model_ml_final_pipeline import (MODEL_FEATURES, PRODUCTION_THRESHOLD, TARGET,
                                      build_calibrated_pipeline)
 
 SCALE = 0.85
