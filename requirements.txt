@@ -1,37 +1,24 @@
-# Interface
-streamlit==1.35.0
-plotly==5.22.0
+# FinPredict AI Pro — Azure App Service (Linux), based on the verified local environment
+# Use Python 3.12 for this deployed artifact unless the model is re-exported and revalidated.
 
-# ML
-lightgbm==4.3.0
-scikit-learn==1.5.0
-joblib==1.4.2
-shap==0.45.1
+# Production ML artifact compatibility
+scikit-learn==1.9.1
+lightgbm==4.7.0
+joblib==1.6.0
+numpy==2.5.1
+pandas==3.0.6
 
-# Vectoriel
-qdrant-client==1.9.1
-sentence-transformers==3.0.1
+# API and request validation
+fastapi==0.139.0
+uvicorn==0.50.2
+pydantic>=2.7.4,<3.0
+pytest==8.4.2
 
-# LLM
-openai==1.30.0
-groq==0.9.0
-
-# Données
-pandas==2.2.2
-numpy==1.26.4
-
-# Rapport PDF
-reportlab==4.2.0
-
-# Automatisation
-requests==2.32.3
+# Azure SQL and configuration
+mssql-python==1.15.0
 python-dotenv==1.0.1
 
-# Sécurité (MFA — à activer plus tard)
-PyJWT==2.8.0
-qrcode[pil]==7.4.2
-pillow==10.3.0
-
-# MCP
-mcp==1.0.0
-fastmcp==0.1.0
+# Linux production server for Azure App Service on Python 3.12
+# App Service requires an explicit startup command for Python 3.13 and earlier.
+gunicorn==26.2.0
+uvicorn-worker==0.4.0
