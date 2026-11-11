@@ -224,6 +224,14 @@ mesurer les écarts modèle/humain et d'alimenter les futures évaluations sur
 des résultats observés, plutôt que de dépendre uniquement du jeu
 d'entraînement historique.
 
+La vue **Surveillance** appelle également `/monitoring-summary`. Cette route
+expose le dernier rapport généré par `backend/scripts/monitoring.py` :
+statut global, PSI/KS des prédictions, drift par variable, qualité des données,
+performance disponible et signaux de fairness selon la règle des 4/5. Le
+frontend n'affiche aucun chiffre de remplacement si le rapport est absent ou
+invalide : il présente un état d'erreur explicite et demande de relancer le
+pipeline de monitoring.
+
 ## Tests et qualité
 
 Tests unitaires et évaluation du modèle :
@@ -261,7 +269,8 @@ python -m backend.scripts.setup_api_key
 Le projet est prêt pour une démonstration technique et une base d'industrialisation. Les prochaines étapes naturelles sont :
 
 1. connecter les décisions humaines et les labels observés à maturité ;
-2. automatiser le suivi du drift, de la qualité des données et de la fairness ;
+2. planifier l'exécution périodique du pipeline de monitoring et historiser les
+   rapports exposés par `/monitoring-summary` ;
 3. ajouter une fiche de changement et une politique de conservation des modèles ;
 4. remplacer les données illustratives du dashboard par des agrégations API ;
 5. externaliser le rate limiting vers Redis ou Azure API Management en multi-instance ;

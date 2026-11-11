@@ -247,6 +247,26 @@ class DashboardSummary(BaseModel):
     model_version: str | None = None
 
 
+class MonitoringSummary(BaseModel):
+    generated_at_utc: str
+    overall_status: Literal["NORMAL", "WARNING", "ALERT", "UNKNOWN"]
+    demo_mode: bool
+    reference_rows: int
+    current_rows: int
+    high_drift_features: int
+    moderate_drift_features: int
+    high_missingness_features: int
+    prediction_psi: float | None = None
+    prediction_ks: float | None = None
+    threshold: float
+    reference_mean_default_probability: float | None = None
+    current_mean_default_probability: float | None = None
+    refusal_rate_delta_pp: float | None = None
+    model_performance: dict[str, Any] | None = None
+    drift_features: list[dict[str, Any]] = Field(default_factory=list)
+    fairness: dict[str, Any] = Field(default_factory=dict)
+
+
 class HumanDecisionUpdate(BaseModel):
     actual_decision: Literal["PENDING", "APPROVED", "REJECTED", "MANUAL_REVIEW"]
 
@@ -705,6 +725,49 @@ def predict(application: LoanApplication, caller: str = Depends(AUTH)) -> Predic
         derived_features=derived,
         explanation=explanation,
     )
+
+
+@app.get("/monitoring-summary", response_model=MonitoringSummary, tags=["Monitoring"])
+def monitoring_summary(caller: str = Depends(AUTH)) -> MonitoringSummary:
+    """Expose the latest generated drift, data-quality and fairness report."""
+    report_path = PROJECT_ROOT / "data" / "reports" / "monitoring" / "step10_monitoring_report.json"
+    if not report_path.is_file():
+        logger.error("Monitoring report is missing: %s", report_path)
+        raise HTTPException(503, "Monitoring report unavailable. Run the monitoring pipeline first.")
+    try:
+        report = json.loads(report_path.read_text(encoding="utf-8"))
+        summary = report.get("summary", {})
+        prediction = report.get("prediction_monitoring", {})
+        drift_path = PROJECT_ROOT / "data" / "reports" / "monitoring" / "step10_feature_drift.csv"
+        drift_features: list[dict[str, Any]] = []
+        if drift_path.is_file():
+            import csv
+            with drift_path.open(newline="", encoding="utf-8") as file:
+                drift_features = list(csv.DictReader(file))
+        fairness_path = PROJECT_ROOT / "data" / "reports" / "fairness_report.json"
+        fairness = json.loads(fairness_path.read_text(encoding="utf-8")) if fairness_path.is_file() else {}
+        return MonitoringSummary(
+            generated_at_utc=str(report.get("generated_at_utc", "")),
+            overall_status=str(summary.get("overall_status", "UNKNOWN")),
+            demo_mode=bool(summary.get("demo_mode", False)),
+            reference_rows=int(summary.get("reference_rows", 0)),
+            current_rows=int(summary.get("current_rows", 0)),
+            high_drift_features=int(summary.get("high_drift_features", 0)),
+            moderate_drift_features=int(summary.get("moderate_drift_features", 0)),
+            high_missingness_features=int(summary.get("high_missingness_features", 0)),
+            prediction_psi=summary.get("prediction_psi"),
+            prediction_ks=summary.get("prediction_ks"),
+            threshold=float(summary.get("threshold", PRODUCTION_THRESHOLD)),
+            reference_mean_default_probability=prediction.get("reference_mean_default_probability"),
+            current_mean_default_probability=prediction.get("current_mean_default_probability"),
+            refusal_rate_delta_pp=prediction.get("refusal_rate_delta_pp"),
+            model_performance=report.get("model_performance"),
+            drift_features=drift_features,
+            fairness=fairness,
+        )
+    except (OSError, ValueError, TypeError, KeyError, json.JSONDecodeError):
+        logger.exception("Monitoring report could not be loaded.")
+        raise HTTPException(503, "Monitoring report is invalid or unavailable.")
 
 
 @app.get("/portfolio", response_model=list[PortfolioRow], tags=["Predictions"])

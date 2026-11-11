@@ -130,6 +130,14 @@ def test_dashboard_summary_returns_persisted_aggregates(client, db, headers):
     assert body["monthly"][0]["month"] == "2026-11"
 
 
+def test_monitoring_summary_returns_report(client, headers):
+    response = client.get("/monitoring-summary", headers=headers)
+    assert response.status_code == 200, response.text
+    body = response.json()
+    assert body["overall_status"] in {"NORMAL", "WARNING", "ALERT", "UNKNOWN"}
+    assert isinstance(body["drift_features"], list)
+
+
 def test_human_decision_updates_application(client, db, headers):
     response = client.patch(
         "/applications/1/decision",

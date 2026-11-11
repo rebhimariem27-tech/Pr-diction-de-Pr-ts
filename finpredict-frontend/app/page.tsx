@@ -52,6 +52,25 @@ type DashboardSummary = {
   latest_submitted_at_utc: string | null;
   model_version: string | null;
 };
+type MonitoringSummary = {
+  generated_at_utc: string;
+  overall_status: 'NORMAL' | 'WARNING' | 'ALERT' | 'UNKNOWN';
+  demo_mode: boolean;
+  reference_rows: number;
+  current_rows: number;
+  high_drift_features: number;
+  moderate_drift_features: number;
+  high_missingness_features: number;
+  prediction_psi: number | null;
+  prediction_ks: number | null;
+  threshold: number;
+  reference_mean_default_probability: number | null;
+  current_mean_default_probability: number | null;
+  refusal_rate_delta_pp: number | null;
+  model_performance: Record<string, number | boolean> | null;
+  drift_features: { feature: string; type: string; psi: string; drift_status: string }[];
+  fairness: Record<string, { flag_4_5_rule?: boolean }[]>;
+};
 type ExplainFactor = { feature: string; value: string | number | null; group: string; points: number; effect: string };
 type ExplainGroup = { id: string; label: string; points: number };
 type Explanation = { unit?: string; baseline_probability?: number; final_probability?: number; threshold?: number; groups?: ExplainGroup[]; factors?: ExplainFactor[] };
@@ -381,8 +400,33 @@ function PortfolioView() {
 }
 
 function MonitoringView({ apiStatus, modelVersion }: { apiStatus: string; modelVersion: string }) {
-  const driftData = [{ day: '04 oct.', v: .12 }, { day: '05 oct.', v: .15 }, { day: '06 oct.', v: .11 }, { day: '07 oct.', v: .18 }, { day: '08 oct.', v: .14 }, { day: '09 oct.', v: .17 }, { day: '10 oct.', v: .16 }];
-  return <><DemoNotice /><PageHeader eyebrow="OBSERVABILITÉ & GOUVERNANCE" title="Surveillance du modèle" description="Suivez la disponibilité, la stabilité des données et la santé du pipeline de production." right={<button className="button button-secondary" onClick={() => window.location.reload()}><RefreshCw size={15} /> Actualiser</button>} /><div className="monitor-banner"><div className={`monitor-banner-icon ${apiStatus === 'online' ? 'ok' : 'warn'}`}><Activity size={20} /></div><div><strong>{apiStatus === 'online' ? 'API accessible' : 'API cloud / locale à vérifier'}</strong><p>{apiStatus === 'online' ? `L’API répond à ${API_BASE}.` : `Aucune connexion confirmée à ${API_BASE}. Les métriques de drift ci-dessous sont illustratives.`}</p></div><Badge kind={apiStatus === 'online' ? 'success' : 'warning'}>{apiStatus === 'online' ? 'En ligne' : 'Non vérifiée'}</Badge></div><div className="monitor-kpis"><KpiCard icon={ShieldCheck} label="Qualité des données" value="Stable" trend="0 anomalie" sub="mode démo" tone="tone-green" /><KpiCard icon={BrainCircuit} label="Version du modèle" value={modelVersion} trend="Actif" sub="Artefact chargé par API" tone="tone-blue" /><KpiCard icon={GaugeCircle} label="Taux de défaut observé" value="5,8 %" trend="−1,2 %" sub="illustratif uniquement" tone="tone-teal" /><KpiCard icon={Zap} label="Prédictions suivies" value="2 843" trend="+10 %" sub="jeu de démonstration" tone="tone-orange" /></div><div className="dashboard-grid monitor-charts"><article className="card chart-card trend-card"><div className="card-heading"><div><h2>Dérive des données (PSI)</h2><p>Indice illustratif sur les 7 derniers jours</p></div><Badge kind="success">Sous le seuil d’alerte</Badge></div><div className="chart-area"><ResponsiveContainer width="100%" height="100%"><LineChart data={driftData} margin={{ top: 15, right: 12, bottom: 0, left: -18 }}><CartesianGrid vertical={false} stroke="#E9EEF5" strokeDasharray="3 4" /><XAxis dataKey="day" axisLine={false} tickLine={false} tick={{ fill: '#8391A7', fontSize: 11 }} dy={8} /><YAxis domain={[0, .3]} ticks={[0, .1, .2, .3]} axisLine={false} tickLine={false} tick={{ fill: '#8391A7', fontSize: 11 }} /><Tooltip formatter={(value: number) => [value.toFixed(3), 'PSI']} contentStyle={{ borderRadius: 12, border: '1px solid #E6ECF4' }} /><Line type="monotone" dataKey="v" stroke="#20A892" strokeWidth={2.5} dot={{ r: 3, fill: '#fff', stroke: '#20A892', strokeWidth: 2 }} /></LineChart></ResponsiveContainer></div><div className="chart-footnote"><span className="legend-dot" style={{ background: '#20A892' }} /> PSI simulé <span className="dash-line" /> Seuil d’alerte souvent configuré à 0,25 — à confirmer dans ton monitoring</div></article><article className="card chart-card"><div className="card-heading"><div><h2>Répartition du risque</h2><p>Données illustratives</p></div><button className="icon-button subtle"><MoreHorizontal size={18} /></button></div><div className="risk-distribution"><div className="risk-ring"><div><strong>2 843</strong><span>prédictions</span></div></div><div className="risk-legend"><div><span className="risk-dot low" /><span>Faible</span><strong>72 %</strong></div><div><span className="risk-dot medium" /><span>Modéré</span><strong>18 %</strong></div><div><span className="risk-dot high" /><span>Élevé</span><strong>10 %</strong></div></div></div></article></div><article className="card model-health-card"><div><div className="mini-status-icon green"><CheckCircle2 size={18} /></div><div><strong>Pipeline ML</strong><p>Chargement de l’artefact et inférence</p></div><Badge kind="success">Chargé</Badge></div><div><div className="mini-status-icon blue"><Cloud size={18} /></div><div><strong>Base Azure SQL</strong><p>Persistance des demandes et prédictions</p></div><Badge kind={apiStatus === 'online' ? 'success' : 'warning'}>{apiStatus === 'online' ? 'Connectée' : 'À vérifier'}</Badge></div><div><div className="mini-status-icon teal"><Fingerprint size={18} /></div><div><strong>Traçabilité</strong><p>Référence et version du modèle sur les résultats d’API</p></div><Badge kind="blue">Active</Badge></div></article></>;
+  const [monitoring, setMonitoring] = useState<MonitoringSummary | null>(null);
+  const [error, setError] = useState('');
+  const [loading, setLoading] = useState(true);
+  const load = useCallback(async () => {
+    setLoading(true); setError('');
+    try {
+      const response = await fetch('/api/monitoring-summary', { headers: { Accept: 'application/json' } });
+      const body = await response.json().catch(() => ({}));
+      if (!response.ok) throw new Error(body.detail || `Impossible de charger le monitoring (HTTP ${response.status}).`);
+      setMonitoring(body as MonitoringSummary);
+    } catch (e) {
+      setError(e instanceof Error ? e.message : 'Impossible de charger le monitoring.');
+    } finally { setLoading(false); }
+  }, []);
+  useEffect(() => { void load(); }, [load]);
+  const statusKind = monitoring?.overall_status === 'NORMAL' ? 'success' : monitoring?.overall_status === 'UNKNOWN' ? 'warning' : 'danger';
+  const fairnessFlags = monitoring ? Object.values(monitoring.fairness).flat().filter(group => group.flag_4_5_rule).length : 0;
+  const performance = monitoring?.model_performance;
+  return <><PageHeader eyebrow="OBSERVABILITÉ & GOUVERNANCE" title="Surveillance du modèle" description="Indicateurs générés par le pipeline de monitoring : drift, qualité des données, performance et fairness." right={<button className="button button-secondary" onClick={() => void load()} disabled={loading}><RefreshCw size={15} /> Actualiser</button>} />
+    {error && <div className="error-callout"><AlertCircle size={17} /><div><strong>Monitoring indisponible</strong><p>{error} Aucun indicateur fictif n’est affiché.</p></div></div>}
+    {loading && <div className="card empty-table">Chargement des indicateurs de supervision…</div>}
+    {monitoring && <><div className="monitor-banner"><div className={`monitor-banner-icon ${monitoring.overall_status === 'NORMAL' ? 'ok' : 'warn'}`}><Activity size={20} /></div><div><strong>État global : {monitoring.overall_status}</strong><p>Rapport généré le {new Date(monitoring.generated_at_utc).toLocaleString('fr-FR')}{monitoring.demo_mode ? ' · batch de démonstration' : ' · batch de production'}</p></div><Badge kind={statusKind}>{monitoring.demo_mode ? 'Démo' : 'Production'}</Badge></div>
+      <div className="monitor-kpis"><KpiCard icon={ShieldCheck} label="Qualité des données" value={monitoring.high_missingness_features === 0 ? 'Stable' : 'À surveiller'} trend={`${monitoring.high_missingness_features} alerte(s)`} sub={`${monitoring.current_rows.toLocaleString('fr-FR')} lignes courantes`} tone="tone-green" /><KpiCard icon={BrainCircuit} label="Version du modèle" value={modelVersion} trend={`Seuil ${(monitoring.threshold * 100).toFixed(0)} %`} sub="Artefact chargé par API" tone="tone-blue" /><KpiCard icon={GaugeCircle} label="PSI prédictions" value={monitoring.prediction_psi?.toFixed(3) ?? '—'} trend={`${monitoring.high_drift_features} drift élevé(s)`} sub={`${monitoring.moderate_drift_features} drift modéré(s)`} tone="tone-teal" /><KpiCard icon={Zap} label="Fairness" value={fairnessFlags === 0 ? 'Aucun signal' : `${fairnessFlags} signal(s)`} trend={performance?.available ? `AUC ${(Number(performance.roc_auc) * 100).toFixed(1)} %` : 'Non calculée'} sub={`${monitoring.reference_rows.toLocaleString('fr-FR')} lignes référence`} tone="tone-orange" /></div>
+      <div className="dashboard-grid monitor-charts"><article className="card chart-card trend-card"><div className="card-heading"><div><h2>Drift des variables</h2><p>PSI du dernier rapport généré</p></div><Badge kind={monitoring.high_drift_features ? 'danger' : 'success'}>{monitoring.high_drift_features ? 'Action requise' : 'Sous contrôle'}</Badge></div><div className="monitor-feature-list">{monitoring.drift_features.slice(0, 8).map(item => <div className="monitor-feature" key={item.feature}><span>{item.feature}</span><div className="bar"><i style={{ width: `${Math.min(100, Number(item.psi) * 400)}%` }} /></div><strong>{Number(item.psi).toFixed(3)}</strong><Badge kind={item.drift_status === 'LOW' ? 'success' : item.drift_status === 'MODERATE' ? 'warning' : 'danger'}>{item.drift_status}</Badge></div>)}</div></article>
+        <article className="card chart-card"><div className="card-heading"><div><h2>Prédictions</h2><p>Comparaison référence / batch courant</p></div></div><div className="risk-legend"><div><span>Probabilité moyenne référence</span><strong>{monitoring.reference_mean_default_probability === null ? '—' : `${(monitoring.reference_mean_default_probability * 100).toFixed(1)} %`}</strong></div><div><span>Probabilité moyenne courante</span><strong>{monitoring.current_mean_default_probability === null ? '—' : `${(monitoring.current_mean_default_probability * 100).toFixed(1)} %`}</strong></div><div><span>Écart du taux de refus</span><strong>{monitoring.refusal_rate_delta_pp === null ? '—' : `${monitoring.refusal_rate_delta_pp.toFixed(2)} pt`}</strong></div></div></article></div>
+      <article className="card model-health-card"><div><div className="mini-status-icon green"><CheckCircle2 size={18} /></div><div><strong>Pipeline ML</strong><p>Rapport de monitoring disponible</p></div><Badge kind="success">Actif</Badge></div><div><div className="mini-status-icon blue"><Cloud size={18} /></div><div><strong>Fairness</strong><p>{fairnessFlags === 0 ? 'Aucun groupe sous le ratio 4/5' : 'Groupes à investiguer dans le rapport'}</p></div><Badge kind={fairnessFlags === 0 ? 'success' : 'warning'}>{fairnessFlags === 0 ? 'OK' : 'Revue'}</Badge></div><div><div className="mini-status-icon teal"><Fingerprint size={18} /></div><div><strong>Traçabilité</strong><p>Source : step10_monitoring_report.json</p></div><Badge kind="blue">Auditée</Badge></div></article></>}
+  </>;
 }
 
 const reportDate = () => new Intl.DateTimeFormat('fr-FR', {
