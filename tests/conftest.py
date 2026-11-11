@@ -87,7 +87,7 @@ def api_module(tiny_model, tmp_path_factory):
 
 class FakeCursor:
     def __init__(self, db):
-        self.db, self._row = db, None
+        self.db, self._row, self._rows = db, None, []
 
     def execute(self, sql, params=()):
         s = " ".join(sql.split())
@@ -101,10 +101,20 @@ class FakeCursor:
             self.db.refs.add(params[0]); self.db.apps.append(params); self._row = (len(self.db.apps),)
         elif "INSERT INTO dbo.prediction_logs" in s:
             self.db.preds.append(params); self._row = (len(self.db.preds),)
+        elif "MAX(model_version)" in s:
+            self._row = (2, 0.21, 1, 1, 2, 0, 0, 0, 15000.0, "2026-11-11T12:00:00+00:00", "test-1")
+        elif "GROUP BY LEFT(submitted_at_utc, 7)" in s:
+            self._rows = [("2026-11", 2, 0.21)]
+        elif "SELECT TOP 1 la.application_id" in s:
+            self._row = (1, 1, "demo-1", "2026-11-11T12:00:00+00:00",
+                         '{"loan_amnt":10000}', 0.21, "ACCEPT", "PENDING", "test-1")
+        elif "UPDATE dbo.loan_applications" in s:
+            self._row = None
         else:
             self._row = (1,)
 
     def fetchone(self): return self._row
+    def fetchall(self): return self._rows
     def close(self): pass
 
 

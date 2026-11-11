@@ -222,6 +222,35 @@ class PredictionResponse(BaseModel):
     tracking_storage: Literal["Azure SQL"] = "Azure SQL"
 
 
+class PortfolioRow(BaseModel):
+    application_id: int
+    prediction_id: int
+    application_ref: str
+    submitted_at_utc: str
+    loan_amnt: float | None = None
+    default_probability: float
+    recommendation: Literal["ACCEPT", "REFUSE"]
+    actual_decision: str
+    model_version: str
+
+
+class DashboardSummary(BaseModel):
+    period_days: int
+    data_available: bool
+    analyzed_count: int
+    average_default_probability: float | None = None
+    recommendation_counts: dict[str, int]
+    actual_decision_counts: dict[str, int]
+    total_loan_amount: float
+    monthly: list[dict[str, str | int | float]]
+    latest_submitted_at_utc: str | None = None
+    model_version: str | None = None
+
+
+class HumanDecisionUpdate(BaseModel):
+    actual_decision: Literal["PENDING", "APPROVED", "REJECTED", "MANUAL_REVIEW"]
+
+
 # =====================================================================
 # 5. FASTAPI
 # =====================================================================
@@ -243,7 +272,7 @@ app.add_middleware(
     CORSMiddleware,
     allow_origins=_origins,
     allow_credentials=False,
-    allow_methods=["GET", "POST", "OPTIONS"],
+    allow_methods=["GET", "POST", "PATCH", "OPTIONS"],
     allow_headers=["Content-Type", "Accept", "X-API-Key"],
 )
 
@@ -314,6 +343,200 @@ def model_info():
     }
 
 
+@app.get("/dashboard-summary", response_model=DashboardSummary, tags=["Monitoring"])
+def dashboard_summary(period_days: int = 30, caller: str = Depends(AUTH)) -> DashboardSummary:
+    """Return real persisted aggregates for the dashboard."""
+    if period_days < 1 or period_days > 3650:
+        raise HTTPException(422, "period_days must be between 1 and 3650.")
+
+    latest_cte = """
+        WITH latest AS (
+            SELECT la.application_id, la.submitted_at_utc, la.actual_decision,
+                   la.feature_snapshot_json, pl.default_probability,
+                   pl.recommended_decision, pl.model_version
+            FROM dbo.loan_applications AS la
+            INNER JOIN dbo.prediction_logs AS pl
+                ON pl.application_id = la.application_id
+            WHERE pl.prediction_id = (
+                SELECT TOP 1 newest.prediction_id
+                FROM dbo.prediction_logs AS newest
+                WHERE newest.application_id = la.application_id
+                ORDER BY newest.predicted_at_utc DESC, newest.prediction_id DESC
+            )
+              AND la.submitted_at_utc >= CONVERT(
+                    NVARCHAR(50), DATEADD(day, ?, SYSUTCDATETIME()), 127
+                  )
+        )
+    """
+    conn = None
+    cursor = None
+    try:
+        conn = get_db_connection()
+        cursor = conn.cursor()
+        cursor.execute(
+            latest_cte
+            + """
+            SELECT COUNT_BIG(*) AS analyzed_count,
+                   AVG(default_probability) AS average_default_probability,
+                   SUM(CASE WHEN recommended_decision = N'ACCEPT' THEN 1 ELSE 0 END) AS accepted_count,
+                   SUM(CASE WHEN recommended_decision = N'REFUSE' THEN 1 ELSE 0 END) AS refused_count,
+                   SUM(CASE WHEN actual_decision = N'PENDING' THEN 1 ELSE 0 END) AS pending_count,
+                   SUM(CASE WHEN actual_decision = N'APPROVED' THEN 1 ELSE 0 END) AS approved_count,
+                   SUM(CASE WHEN actual_decision = N'REJECTED' THEN 1 ELSE 0 END) AS rejected_count,
+                   SUM(CASE WHEN actual_decision = N'MANUAL_REVIEW' THEN 1 ELSE 0 END) AS manual_review_count,
+                   SUM(COALESCE(TRY_CONVERT(float, JSON_VALUE(feature_snapshot_json, '$.loan_amnt')), 0)) AS total_loan_amount,
+                   MAX(submitted_at_utc) AS latest_submitted_at_utc,
+                   MAX(model_version) AS model_version
+            FROM latest
+            """,
+            (-period_days,),
+        )
+        summary = cursor.fetchone()
+        if summary is None:
+            raise RuntimeError("Azure SQL returned no dashboard summary.")
+
+        cursor.execute(
+            latest_cte
+            + """
+            SELECT LEFT(submitted_at_utc, 7) AS month,
+                   COUNT_BIG(*) AS analyzed_count,
+                   AVG(default_probability) AS average_default_probability
+            FROM latest
+            GROUP BY LEFT(submitted_at_utc, 7)
+            ORDER BY month
+            """,
+            (-period_days,),
+        )
+        monthly_rows = cursor.fetchall()
+
+        def count(value: Any) -> int:
+            return int(value or 0)
+
+        monthly = [
+            {
+                "month": str(row[0]),
+                "analyzed_count": count(row[1]),
+                "average_default_probability": float(row[2] or 0.0),
+            }
+            for row in monthly_rows
+        ]
+        analyzed_count = count(summary[0])
+        return DashboardSummary(
+            period_days=period_days,
+            data_available=analyzed_count > 0,
+            analyzed_count=analyzed_count,
+            average_default_probability=(
+                float(summary[1]) if summary[1] is not None else None
+            ),
+            recommendation_counts={
+                "ACCEPT": count(summary[2]),
+                "REFUSE": count(summary[3]),
+            },
+            actual_decision_counts={
+                "PENDING": count(summary[4]),
+                "APPROVED": count(summary[5]),
+                "REJECTED": count(summary[6]),
+                "MANUAL_REVIEW": count(summary[7]),
+            },
+            total_loan_amount=float(summary[8] or 0.0),
+            monthly=monthly,
+            latest_submitted_at_utc=(
+                str(summary[9]) if summary[9] is not None else None
+            ),
+            model_version=str(summary[10]) if summary[10] is not None else None,
+        )
+    except HTTPException:
+        raise
+    except Exception as exc:
+        logger.exception("Azure SQL dashboard aggregation failed.")
+        raise HTTPException(503, "Dashboard data is unavailable.") from exc
+    finally:
+        if cursor is not None:
+            cursor.close()
+        if conn is not None:
+            conn.close()
+
+
+@app.patch(
+    "/applications/{application_id}/decision",
+    response_model=PortfolioRow,
+    tags=["Human review"],
+)
+def update_human_decision(
+    application_id: int,
+    update: HumanDecisionUpdate,
+    caller: str = Depends(AUTH),
+) -> PortfolioRow:
+    """Persist the human decision separately from the model recommendation."""
+    if application_id < 1:
+        raise HTTPException(422, "application_id must be positive.")
+
+    conn = None
+    cursor = None
+    try:
+        conn = get_db_connection()
+        cursor = conn.cursor()
+        cursor.execute(
+            """
+            SELECT TOP 1 la.application_id, pl.prediction_id, la.application_ref,
+                   la.submitted_at_utc, la.feature_snapshot_json,
+                   pl.default_probability, pl.recommended_decision,
+                   la.actual_decision, pl.model_version
+            FROM dbo.loan_applications AS la
+            INNER JOIN dbo.prediction_logs AS pl
+                ON pl.application_id = la.application_id
+            WHERE la.application_id = ?
+            ORDER BY pl.predicted_at_utc DESC, pl.prediction_id DESC
+            """,
+            (application_id,),
+        )
+        row = cursor.fetchone()
+        if row is None:
+            raise HTTPException(404, "Application not found.")
+
+        now = utc_now()
+        cursor.execute(
+            """
+            UPDATE dbo.loan_applications
+            SET actual_decision = ?, decision_at_utc = ?, updated_at_utc = ?
+            WHERE application_id = ?
+            """,
+            (update.actual_decision, now, now, application_id),
+        )
+        conn.commit()
+        logger.info(
+            "Human decision updated application_id=%s decision=%s caller=%s",
+            application_id, update.actual_decision, caller,
+        )
+
+        snapshot = json.loads(row[4])
+        return PortfolioRow(
+            application_id=int(row[0]),
+            prediction_id=int(row[1]),
+            application_ref=str(row[2]),
+            submitted_at_utc=str(row[3]),
+            loan_amnt=float(snapshot["loan_amnt"]) if snapshot.get("loan_amnt") is not None else None,
+            default_probability=float(row[5]),
+            recommendation=str(row[6]),
+            actual_decision=update.actual_decision,
+            model_version=str(row[8]),
+        )
+    except HTTPException:
+        if conn is not None:
+            conn.rollback()
+        raise
+    except Exception as exc:
+        if conn is not None:
+            conn.rollback()
+        logger.exception("Human decision update failed.")
+        raise HTTPException(503, "Human decision could not be saved.") from exc
+    finally:
+        if cursor is not None:
+            cursor.close()
+        if conn is not None:
+            conn.close()
+
+
 @app.post("/predict", response_model=PredictionResponse, status_code=201, tags=["Predictions"])
 def predict(application: LoanApplication, caller: str = Depends(AUTH)) -> PredictionResponse:
     # 1. Séparer la référence de suivi et les features.
@@ -371,7 +594,8 @@ def predict(application: LoanApplication, caller: str = Depends(AUTH)) -> Predic
     explanation: dict[str, Any] = {}
     if EXPLAINER is not None:
         try:
-            explanation = EXPLAINER.explain(input_df)
+            explanation = EXPLAINER.explain(input_df, expected_probability=probability)
+            explanation["threshold"] = PRODUCTION_THRESHOLD
         except Exception:
             logger.exception("Explanation failed; continuing without it.")
     explanation_json = canonical_json(explanation)
@@ -481,3 +705,64 @@ def predict(application: LoanApplication, caller: str = Depends(AUTH)) -> Predic
         derived_features=derived,
         explanation=explanation,
     )
+
+
+@app.get("/portfolio", response_model=list[PortfolioRow], tags=["Predictions"])
+def portfolio(limit: int = 50, offset: int = 0, caller: str = Depends(AUTH)) -> list[PortfolioRow]:
+    """Return the persisted predictions shown by the portfolio screen."""
+    if limit < 1 or limit > 100:
+        raise HTTPException(422, "limit must be between 1 and 100.")
+    if offset < 0:
+        raise HTTPException(422, "offset must be non-negative.")
+
+    conn = None
+    cursor = None
+    try:
+        conn = get_db_connection()
+        cursor = conn.cursor()
+        cursor.execute(
+            """
+            SELECT la.application_id, pl.prediction_id, la.application_ref,
+                   la.submitted_at_utc, la.feature_snapshot_json,
+                   pl.default_probability, pl.recommended_decision,
+                   la.actual_decision, pl.model_version
+            FROM dbo.loan_applications AS la
+            INNER JOIN dbo.prediction_logs AS pl
+                ON pl.application_id = la.application_id
+            WHERE pl.prediction_id = (
+                SELECT TOP 1 latest.prediction_id
+                FROM dbo.prediction_logs AS latest
+                WHERE latest.application_id = la.application_id
+                ORDER BY latest.predicted_at_utc DESC, latest.prediction_id DESC
+            )
+            ORDER BY pl.predicted_at_utc DESC, pl.prediction_id DESC
+            OFFSET ? ROWS FETCH NEXT ? ROWS ONLY
+            """,
+            (offset, limit),
+        )
+        rows = cursor.fetchall()
+        result: list[PortfolioRow] = []
+        for row in rows:
+            snapshot = json.loads(row[4])
+            result.append(PortfolioRow(
+                application_id=int(row[0]),
+                prediction_id=int(row[1]),
+                application_ref=str(row[2]),
+                submitted_at_utc=str(row[3]),
+                loan_amnt=float(snapshot["loan_amnt"]) if snapshot.get("loan_amnt") is not None else None,
+                default_probability=float(row[5]),
+                recommendation=str(row[6]),
+                actual_decision=str(row[7]),
+                model_version=str(row[8]),
+            ))
+        return result
+    except HTTPException:
+        raise
+    except Exception as exc:
+        logger.exception("Azure SQL portfolio read failed.")
+        raise HTTPException(503, "Portfolio history is unavailable.") from exc
+    finally:
+        if cursor is not None:
+            cursor.close()
+        if conn is not None:
+            conn.close()

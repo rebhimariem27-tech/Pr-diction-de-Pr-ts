@@ -184,6 +184,8 @@ C:\venvs\finpredict\Scripts\python.exe -m uvicorn backend.app.main:app --reload 
 | `GET` | `/` | publique | Vérifier que l'application répond |
 | `GET` | `/health` | publique | Vérifier le modèle et Azure SQL |
 | `GET` | `/model-info` | clé API | Lire la version, le seuil et les variables |
+| `GET` | `/dashboard-summary` | clé API | Agréger les prédictions persistées pour le dashboard |
+| `PATCH` | `/applications/{application_id}/decision` | clé API | Enregistrer la décision humaine |
 | `POST` | `/predict` | clé API | Valider, scorer, expliquer et persister une demande |
 | `GET` | `/portfolio` | clé API | Lire l'historique paginé des prédictions |
 
@@ -208,6 +210,19 @@ $body = @{
 Invoke-RestMethod -Uri "http://127.0.0.1:8000/predict" `
   -Method Post -Headers $headers -ContentType "application/json" -Body $body
 ```
+
+Le dashboard appelle `/dashboard-summary?period_days=30`. Les KPI et graphiques
+sont calculés à partir des dernières prédictions persistées pour chaque demande.
+Lorsqu'aucune analyse n'est disponible sur la période, l'interface affiche un
+état vide au lieu de présenter des chiffres de démonstration.
+
+La route `/applications/{application_id}/decision` sépare la recommandation
+du modèle de la décision réellement prise par l'analyste. Les décisions
+`PENDING`, `MANUAL_REVIEW`, `APPROVED` et `REJECTED` sont autorisées et
+horodatées dans Azure SQL. Cette boucle de supervision permet ensuite de
+mesurer les écarts modèle/humain et d'alimenter les futures évaluations sur
+des résultats observés, plutôt que de dépendre uniquement du jeu
+d'entraînement historique.
 
 ## Tests et qualité
 
