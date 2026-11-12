@@ -230,8 +230,10 @@ tables de tracking. Si `/portfolio` fonctionne mais qu'une décision humaine
 retourne une erreur de permission `UPDATE`, exécutez
 [`backend/scripts/grant_tracking_app_permissions.sql`](./backend/scripts/grant_tracking_app_permissions.sql)
 avec un compte administrateur Azure SQL, après avoir remplacé
-`[FINPREDICT_APP_USER]` par le nom de l'utilisateur SQL de l'API. Ce compte
-SQL est différent de la clé `X-API-Key`.
+`[FINPREDICT_APP_USER]` par le nom de l'utilisateur SQL de l'API. Le script
+accorde un `UPDATE` limité à `actual_decision`, `decision_at_utc` et
+`updated_at_utc`, plutôt qu'un droit de modification sur toutes les colonnes.
+Ce compte SQL est différent de la clé `X-API-Key`.
 
 La vue **Surveillance** appelle également `/monitoring-summary`. Cette route
 expose le dernier rapport généré par `backend/scripts/monitoring.py` :

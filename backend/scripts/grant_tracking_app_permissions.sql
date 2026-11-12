@@ -10,7 +10,9 @@ USE [FinPredictTrackingDB];
 GO
 
 GRANT SELECT ON OBJECT::dbo.model_versions TO [FINPREDICT_APP_USER];
-GRANT SELECT, INSERT, UPDATE ON OBJECT::dbo.loan_applications TO [FINPREDICT_APP_USER];
+GRANT SELECT, INSERT ON OBJECT::dbo.loan_applications TO [FINPREDICT_APP_USER];
+GRANT UPDATE (actual_decision, decision_at_utc, updated_at_utc)
+    ON OBJECT::dbo.loan_applications TO [FINPREDICT_APP_USER];
 GRANT SELECT, INSERT ON OBJECT::dbo.prediction_logs TO [FINPREDICT_APP_USER];
 GRANT SELECT ON OBJECT::dbo.loan_outcome_events TO [FINPREDICT_APP_USER];
 GRANT SELECT ON OBJECT::dbo.outcome_labels TO [FINPREDICT_APP_USER];
