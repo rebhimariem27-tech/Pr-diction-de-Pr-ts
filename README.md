@@ -58,13 +58,18 @@ L'objectif n'est pas de remplacer l'analyste : c'est de lui donner un signal de 
 
 ### Pilotage et portefeuille
 
-- tableau de bord avec indicateurs de synthèse ;
+- tableau de bord alimenté par les agrégations réelles de `/dashboard-summary` ;
 - consultation de l'historique des prédictions persistées ;
+- décision humaine enregistrée séparément de la recommandation du modèle ;
+- notifications internes pour le monitoring, l'état de l'API et les décisions humaines ;
 - état de santé de l'API et de la connexion Azure SQL ;
 - exports de rapports de risque, monitoring et gouvernance ;
-- écrans de surveillance et de paramétrage pour préparer l'industrialisation.
+- écran de surveillance alimenté par le dernier rapport de drift, qualité et fairness.
 
-> Les KPI, tendances et graphiques de démonstration de l'interface sont signalés comme illustratifs. Les résultats d'une analyse et l'historique renvoyé par `/portfolio` proviennent, eux, de l'API et du stockage configurés.
+> Les métriques de monitoring reflètent le dernier rapport généré. Elles restent
+> en mode démonstration tant qu'un batch réel n'a pas remplacé le rapport de
+> référence. Les résultats d'analyse, le portefeuille et les KPI du dashboard
+> proviennent de l'API et du stockage configurés.
 
 ## Performance du modèle
 
@@ -185,6 +190,7 @@ C:\venvs\finpredict\Scripts\python.exe -m uvicorn backend.app.main:app --reload 
 | `GET` | `/health` | publique | Vérifier le modèle et Azure SQL |
 | `GET` | `/model-info` | clé API | Lire la version, le seuil et les variables |
 | `GET` | `/dashboard-summary` | clé API | Agréger les prédictions persistées pour le dashboard |
+| `GET` | `/monitoring-summary` | clé API | Exposer le dernier rapport de drift, qualité, performance et fairness |
 | `PATCH` | `/applications/{application_id}/decision` | clé API | Enregistrer la décision humaine |
 | `POST` | `/predict` | clé API | Valider, scorer, expliquer et persister une demande |
 | `GET` | `/portfolio` | clé API | Lire l'historique paginé des prédictions |
@@ -243,6 +249,12 @@ frontend n'affiche aucun chiffre de remplacement si le rapport est absent ou
 invalide : il présente un état d'erreur explicite et demande de relancer le
 pipeline de monitoring.
 
+Le centre de notifications de l'interface signale la disponibilité du
+monitoring, une perte de connexion API/SQL et chaque décision humaine
+enregistrée avec la référence du dossier et le passage entre l'ancienne et la
+nouvelle décision. Ces notifications sont actuellement conservées en mémoire
+dans l'interface et sont réinitialisées lors d'un rechargement complet.
+
 ## Tests et qualité
 
 Tests unitaires et évaluation du modèle :
@@ -277,15 +289,24 @@ python -m backend.scripts.setup_api_key
 
 ## Limites connues et feuille de route
 
-Le projet est prêt pour une démonstration technique et une base d'industrialisation. Les prochaines étapes naturelles sont :
+Le projet est prêt pour une démonstration technique et une base
+d'industrialisation. L'état actuel des six chantiers est :
 
-1. connecter les décisions humaines et les labels observés à maturité ;
-2. planifier l'exécution périodique du pipeline de monitoring et historiser les
-   rapports exposés par `/monitoring-summary` ;
-3. ajouter une fiche de changement et une politique de conservation des modèles ;
-4. remplacer les données illustratives du dashboard par des agrégations API ;
-5. externaliser le rate limiting vers Redis ou Azure API Management en multi-instance ;
-6. formaliser les contrôles de validation avant chaque mise en production.
+1. **Partiellement réalisé — décisions humaines et labels matures :** les
+   décisions `PENDING`, `MANUAL_REVIEW`, `APPROVED` et `REJECTED` sont
+   persistées et séparées des recommandations du modèle. Les labels observés à
+   maturité ne sont pas encore reliés aux évaluations de performance réelles.
+2. **Partiellement réalisé — monitoring :** `/monitoring-summary` et la vue
+   Surveillance exposent le dernier rapport. L'exécution planifiée et
+   l'historisation de plusieurs rapports restent à automatiser.
+3. **À faire — gouvernance des modèles :** créer une fiche de changement et
+   définir une politique de conservation, d'archivage et de suppression.
+4. **Réalisé — dashboard :** les KPI et graphiques utilisent
+   `/dashboard-summary` et les prédictions persistées dans Azure SQL.
+5. **À faire — multi-instance :** remplacer le rate limiting mémoire par Redis
+   ou Azure API Management.
+6. **À faire — mise en production :** formaliser une pipeline CI/CD bloquante
+   avec contrôles modèle, données, sécurité et migration avant déploiement.
 
 ## Structure du dépôt
 
