@@ -234,6 +234,27 @@ function Topbar({ title, onMenu, apiStatus }: { title: string; onMenu: () => voi
     read: false,
   }]);
   const unreadCount = notifications.filter(notification => !notification.read).length;
+  useEffect(() => {
+    const handleHumanDecision = (event: Event) => {
+      const detail = (event as CustomEvent<{ applicationId: number; applicationRef: string; previousDecision: string; nextDecision: string }>).detail;
+      const decisionLabels: Record<string, string> = {
+        PENDING: 'À examiner',
+        MANUAL_REVIEW: 'Revue manuelle',
+        APPROVED: 'Approuvée',
+        REJECTED: 'Rejetée',
+      };
+      setNotifications(current => [{
+        id: `human-decision-${detail.applicationId}-${Date.now()}`,
+        title: 'Décision humaine enregistrée',
+        message: `${detail.applicationRef} : ${decisionLabels[detail.previousDecision] || detail.previousDecision} → ${decisionLabels[detail.nextDecision] || detail.nextDecision}.`,
+        time: 'À l’instant',
+        kind: detail.nextDecision === 'REJECTED' ? 'warning' : 'success',
+        read: false,
+      }, ...current]);
+    };
+    window.addEventListener('finpredict:human-decision', handleHumanDecision);
+    return () => window.removeEventListener('finpredict:human-decision', handleHumanDecision);
+  }, []);
   const markAllRead = () => setNotifications(current => current.map(notification => ({ ...notification, read: true })));
   const statusNotification = apiStatus === 'offline' ? {
     id: 'api-offline', title: 'Connexion à vérifier',
@@ -412,7 +433,12 @@ function PortfolioView() {
       });
       const data = await response.json().catch(() => ({}));
       if (!response.ok) throw new Error(data.detail || 'Impossible d’enregistrer la décision humaine.');
+      const previousDecision = rows.find(row => row.application_id === applicationId)?.actual_decision || 'PENDING';
+      const applicationRef = rows.find(row => row.application_id === applicationId)?.application_ref || `Application #${applicationId}`;
       setRows(current => current.map(row => row.application_id === applicationId ? { ...row, actual_decision: data.actual_decision } : row));
+      window.dispatchEvent(new CustomEvent('finpredict:human-decision', {
+        detail: { applicationId, applicationRef, previousDecision, nextDecision: data.actual_decision },
+      }));
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Impossible d’enregistrer la décision humaine.');
     } finally {
