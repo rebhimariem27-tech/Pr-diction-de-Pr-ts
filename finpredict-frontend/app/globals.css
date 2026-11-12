@@ -69,7 +69,27 @@ button:focus-visible, input:focus-visible, select:focus-visible { outline: 3px s
 .icon-button { display: inline-grid; place-items: center; width: 34px; height: 34px; border: 1px solid transparent; border-radius: 8px; background: transparent; color: #62748a; position: relative; transition: .18s; }
 .icon-button:hover { background: #f2f6fa; border-color: #e6edf5; }
 .icon-button.subtle { width: 30px; height: 30px; color: #9aa7b8; }
+.notification-wrap { position: relative; }
 .notification span { position: absolute; width: 6px; height: 6px; top: 5px; right: 6px; border-radius: 50%; background: #f17b80; border: 1px solid #fff; }
+.notification-panel { position: absolute; z-index: 40; top: 44px; right: -8px; width: 342px; overflow: hidden; border: 1px solid #e5ebf2; border-radius: 12px; background: #fff; box-shadow: 0 16px 40px rgba(24, 50, 78, .16); }
+.notification-panel-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; padding: 15px 16px 12px; border-bottom: 1px solid #edf1f5; }
+.notification-panel-head strong { display: block; color: #233d58; font: 800 13px Manrope, sans-serif; }
+.notification-panel-head small { display: block; margin-top: 4px; color: #91a0b0; font-size: 10px; }
+.notification-read { padding: 0; border: 0; background: transparent; color: #4d6fff; font-size: 9px; font-weight: 700; }
+.notification-read:disabled { color: #aab5c1; }
+.notification-list { max-height: 330px; overflow-y: auto; }
+.notification-item { position: relative; width: 100%; display: flex; align-items: flex-start; gap: 10px; padding: 13px 16px; border: 0; border-bottom: 1px solid #f0f3f7; background: #f7fbff; text-align: left; }
+.notification-item.read { background: #fff; }
+.notification-item:hover { background: #f1f7fc; }
+.notification-icon { display: grid; place-items: center; width: 28px; height: 28px; flex: 0 0 28px; border-radius: 8px; }
+.notification-icon.info { color: #4d6fff; background: #edf1ff; }
+.notification-icon.warning { color: #b27819; background: #fff3dc; }
+.notification-icon.success { color: #1c9c70; background: #e6f8ef; }
+.notification-copy { display: grid; min-width: 0; gap: 3px; }
+.notification-copy strong { color: #344c65; font-size: 10px; }
+.notification-copy span { color: #8292a3; font-size: 10px; line-height: 1.4; }
+.notification-copy small { color: #a0adba; font-size: 9px; }
+.notification-item > i { width: 6px; height: 6px; flex: 0 0 6px; margin: 4px 0 0 auto; border-radius: 50%; background: #ef7c84; }
 .topbar-divider { height: 25px; width: 1px; background: #e8edf3; }
 .profile-button { display: flex; align-items: center; gap: 7px; background: transparent; border: 0; color: #728298; padding: 0; }
 .avatar-top { width: 32px; height: 32px; background: #102d47; color: #f4fbff; font-size: 10px; letter-spacing: .2px; box-shadow: 0 0 0 3px #edf3f9; }
@@ -436,6 +456,7 @@ td small { display: block; color: #9aa6b4; margin-top: 4px; font-size: 9px; }
   .table-footer { align-items: flex-start; flex-direction: column; gap: 12px; }
   .risk-distribution { flex-direction: column; gap: 18px; }
   .risk-legend { width: 100%; }
+  .notification-panel { position: fixed; top: 67px; right: 10px; left: 10px; width: auto; }
   .monitor-feature { grid-template-columns: minmax(100px, 1fr) minmax(45px, 1fr) 38px 58px; gap: 5px; }
   .monitor-feature-list { gap: 10px; }
   .settings-card { padding: 15px; }

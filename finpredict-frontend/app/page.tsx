@@ -71,6 +71,14 @@ type MonitoringSummary = {
   drift_features: { feature: string; type: string; psi: string; drift_status: string }[];
   fairness: Record<string, { flag_4_5_rule?: boolean }[]>;
 };
+type NotificationItem = {
+  id: string;
+  title: string;
+  message: string;
+  time: string;
+  kind: 'success' | 'warning' | 'info';
+  read: boolean;
+};
 type ExplainFactor = { feature: string; value: string | number | null; group: string; points: number; effect: string };
 type ExplainGroup = { id: string; label: string; points: number };
 type Explanation = { unit?: string; baseline_probability?: number; final_probability?: number; threshold?: number; groups?: ExplainGroup[]; factors?: ExplainFactor[] };
@@ -214,9 +222,28 @@ function Sidebar({ active, onNavigate, mobileOpen, onClose }: { active: View; on
   </>;
 }
 
-function Topbar({ title, onMenu }: { title: string; onMenu: () => void }) {
+function Topbar({ title, onMenu, apiStatus }: { title: string; onMenu: () => void; apiStatus: 'checking' | 'online' | 'offline' }) {
   const [search, setSearch] = useState('');
-  return <header className="topbar"><button className="mobile-menu icon-button" onClick={onMenu} aria-label="Ouvrir le menu"><Menu size={20} /></button><div className="breadcrumb"><span>FinPredict</span><ChevronRight size={14} /><strong>{title}</strong></div><div className="topbar-actions"><div className="global-search"><Search size={16} /><input value={search} onChange={e => setSearch(e.target.value)} placeholder="Rechercher…" aria-label="Rechercher" />{search && <button onClick={() => setSearch('')} aria-label="Effacer"><X size={14} /></button>}<kbd>⌘ K</kbd></div><button className="icon-button notification" aria-label="Notifications"><Bell size={18} /><span /></button><div className="topbar-divider" /><button className="profile-button" aria-label="Profil"><div className="avatar avatar-top">MR</div><ChevronDown size={14} /></button></div></header>;
+  const [notificationsOpen, setNotificationsOpen] = useState(false);
+  const [notifications, setNotifications] = useState<NotificationItem[]>(() => [{
+    id: 'monitoring-ready',
+    title: 'Monitoring disponible',
+    message: 'Le dernier rapport de supervision peut être consulté.',
+    time: 'À l’instant',
+    kind: 'info',
+    read: false,
+  }]);
+  const unreadCount = notifications.filter(notification => !notification.read).length;
+  const markAllRead = () => setNotifications(current => current.map(notification => ({ ...notification, read: true })));
+  const statusNotification = apiStatus === 'offline' ? {
+    id: 'api-offline', title: 'Connexion à vérifier',
+    message: 'L’API ou Azure SQL ne répond pas actuellement.',
+    time: 'Maintenant', kind: 'warning' as const, read: false,
+  } : null;
+  const visibleNotifications = statusNotification && !notifications.some(notification => notification.id === statusNotification.id)
+    ? [statusNotification, ...notifications] : notifications;
+  const visibleUnreadCount = visibleNotifications.filter(notification => !notification.read).length;
+  return <header className="topbar"><button className="mobile-menu icon-button" onClick={onMenu} aria-label="Ouvrir le menu"><Menu size={20} /></button><div className="breadcrumb"><span>FinPredict</span><ChevronRight size={14} /><strong>{title}</strong></div><div className="topbar-actions"><div className="global-search"><Search size={16} /><input value={search} onChange={e => setSearch(e.target.value)} placeholder="Rechercher…" aria-label="Rechercher" />{search && <button onClick={() => setSearch('')} aria-label="Effacer"><X size={14} /></button>}<kbd>⌘ K</kbd></div><div className="notification-wrap"><button className="icon-button notification" aria-label={`Notifications${visibleUnreadCount ? `, ${visibleUnreadCount} non lue(s)` : ''}`} aria-expanded={notificationsOpen} onClick={() => setNotificationsOpen(value => !value)}><Bell size={18} />{visibleUnreadCount > 0 && <span />}</button>{notificationsOpen && <div className="notification-panel" role="dialog" aria-label="Centre de notifications"><div className="notification-panel-head"><div><strong>Notifications</strong><small>{visibleUnreadCount ? `${visibleUnreadCount} non lue(s)` : 'Tout est lu'}</small></div><button className="notification-read" onClick={markAllRead} disabled={!visibleUnreadCount}>Tout marquer comme lu</button></div><div className="notification-list">{visibleNotifications.map(notification => <button className={`notification-item ${notification.read ? 'read' : ''}`} key={notification.id} onClick={() => setNotifications(current => current.map(item => item.id === notification.id ? { ...item, read: true } : item))}><span className={`notification-icon ${notification.kind}`}><Info size={14} /></span><span className="notification-copy"><strong>{notification.title}</strong><span>{notification.message}</span><small>{notification.time}</small></span>{!notification.read && <i aria-hidden="true" />}</button>)}</div></div>}</div><div className="topbar-divider" /><button className="profile-button" aria-label="Profil"><div className="avatar avatar-top">MR</div><ChevronDown size={14} /></button></div></header>;
 }
 
 function PageHeader({ eyebrow, title, description, right }: { eyebrow?: string; title: string; description: string; right?: React.ReactNode }) {
@@ -643,5 +670,5 @@ export default function HomePage() {
     if (active === 'reports') return <ReportsView />;
     return <SettingsView apiStatus={apiStatus} />;
   };
-  return <div className="app-shell"><Sidebar active={active} onNavigate={navigate} mobileOpen={mobileOpen} onClose={() => setMobileOpen(false)} /><div className="app-main"><Topbar title={titles[active]} onMenu={() => setMobileOpen(true)} /><main className="page-content">{renderView()}<footer className="app-footer"><span>© 2026 FinPredict AI Pro</span><span>Intelligent Credit Risk <span className="footer-sep">·</span> <span className="footer-status"><span className={`online-dot ${apiStatus !== 'online' ? 'offline-dot' : ''}`} />{apiStatus === 'online' ? 'API & SQL connectés' : apiStatus === 'checking' ? 'Vérification de connexion' : 'API non vérifiée'}</span></span><span>{now ? now.charAt(0).toUpperCase() + now.slice(1) : 'FinPredict'}</span></footer></main></div></div>;
+  return <div className="app-shell"><Sidebar active={active} onNavigate={navigate} mobileOpen={mobileOpen} onClose={() => setMobileOpen(false)} /><div className="app-main"><Topbar title={titles[active]} apiStatus={apiStatus} onMenu={() => setMobileOpen(true)} /><main className="page-content">{renderView()}<footer className="app-footer"><span>© 2026 FinPredict AI Pro</span><span>Intelligent Credit Risk <span className="footer-sep">·</span> <span className="footer-status"><span className={`online-dot ${apiStatus !== 'online' ? 'offline-dot' : ''}`} />{apiStatus === 'online' ? 'API & SQL connectés' : apiStatus === 'checking' ? 'Vérification de connexion' : 'API non vérifiée'}</span></span><span>{now ? now.charAt(0).toUpperCase() + now.slice(1) : 'FinPredict'}</span></footer></main></div></div>;
 }
