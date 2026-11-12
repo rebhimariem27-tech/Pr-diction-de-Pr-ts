@@ -163,6 +163,11 @@ def is_duplicate_key_error(exc: Exception) -> bool:
     )
 
 
+def is_permission_denied_error(exc: Exception) -> bool:
+    text = str(exc).lower()
+    return "permission was denied" in text or "permission denied" in text
+
+
 # =====================================================================
 # 4. SCHEMAS
 # =====================================================================
@@ -548,6 +553,16 @@ def update_human_decision(
     except Exception as exc:
         if conn is not None:
             conn.rollback()
+        if is_permission_denied_error(exc):
+            logger.exception(
+                "Human decision update rejected by Azure SQL permissions. "
+                "Grant UPDATE on dbo.loan_applications to SQL_APP_USERNAME."
+            )
+            raise HTTPException(
+                503,
+                "Azure SQL autorise la lecture mais refuse la mise à jour. "
+                "Accordez le droit UPDATE sur dbo.loan_applications au compte SQL de l'API.",
+            ) from exc
         logger.exception("Human decision update failed.")
         raise HTTPException(503, "Human decision could not be saved.") from exc
     finally:

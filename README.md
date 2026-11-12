@@ -224,6 +224,15 @@ mesurer les écarts modèle/humain et d'alimenter les futures évaluations sur
 des résultats observés, plutôt que de dépendre uniquement du jeu
 d'entraînement historique.
 
+Pour que cette route puisse écrire la décision, le principal Azure SQL indiqué
+par `SQL_APP_USERNAME` doit avoir les droits de lecture et d'écriture sur les
+tables de tracking. Si `/portfolio` fonctionne mais qu'une décision humaine
+retourne une erreur de permission `UPDATE`, exécutez
+[`backend/scripts/grant_tracking_app_permissions.sql`](./backend/scripts/grant_tracking_app_permissions.sql)
+avec un compte administrateur Azure SQL, après avoir remplacé
+`[FINPREDICT_APP_USER]` par le nom de l'utilisateur SQL de l'API. Ce compte
+SQL est différent de la clé `X-API-Key`.
+
 La vue **Surveillance** appelle également `/monitoring-summary`. Cette route
 expose le dernier rapport généré par `backend/scripts/monitoring.py` :
 statut global, PSI/KS des prédictions, drift par variable, qualité des données,
