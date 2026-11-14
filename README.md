@@ -287,26 +287,6 @@ python -m backend.scripts.setup_api_key
 - la recommandation est présentée comme une aide à la décision, avec supervision humaine ;
 - CORS doit être limité aux origines frontend réellement autorisées.
 
-## Limites connues et feuille de route
-
-Le projet est prêt pour une démonstration technique et une base
-d'industrialisation. L'état actuel des six chantiers est :
-
-1. **Partiellement réalisé — décisions humaines et labels matures :** les
-   décisions `PENDING`, `MANUAL_REVIEW`, `APPROVED` et `REJECTED` sont
-   persistées et séparées des recommandations du modèle. Les labels observés à
-   maturité ne sont pas encore reliés aux évaluations de performance réelles.
-2. **Partiellement réalisé — monitoring :** `/monitoring-summary` et la vue
-   Surveillance exposent le dernier rapport. L'exécution planifiée et
-   l'historisation de plusieurs rapports restent à automatiser.
-3. **À faire — gouvernance des modèles :** créer une fiche de changement et
-   définir une politique de conservation, d'archivage et de suppression.
-4. **Réalisé — dashboard :** les KPI et graphiques utilisent
-   `/dashboard-summary` et les prédictions persistées dans Azure SQL.
-5. **À faire — multi-instance :** remplacer le rate limiting mémoire par Redis
-   ou Azure API Management.
-6. **À faire — mise en production :** formaliser une pipeline CI/CD bloquante
-   avec contrôles modèle, données, sécurité et migration avant déploiement.
 
 ## Structure du dépôt
 
